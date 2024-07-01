@@ -10,7 +10,7 @@ using Assets.Scripts;
 public class BluetoothManager : MonoBehaviour
 {
     private static BluetoothManager instance;
-    private static readonly object _lock = new object();
+    private static readonly object _lock = new();
 
     public static BluetoothManager GetInstance()
     {
@@ -20,7 +20,7 @@ public class BluetoothManager : MonoBehaviour
             if (instance == null)
             {
                 // Create a new GameObject to attach the BluetoothManager if one does not exist
-                GameObject singletonObject = new GameObject();
+                GameObject singletonObject = new();
                 instance = singletonObject.AddComponent<BluetoothManager>();
                 singletonObject.name = typeof(BluetoothManager).ToString();
 

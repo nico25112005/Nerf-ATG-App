@@ -25,7 +25,6 @@ public class SceneManagerSkript : MonoBehaviour
 
             case 1:
                 if (player.WeaponType == WeaponType.None) return;
-                player.Coins -= Settings.weaponInfo[player.WeaponType].Price;
                 break;
 
             case 2:

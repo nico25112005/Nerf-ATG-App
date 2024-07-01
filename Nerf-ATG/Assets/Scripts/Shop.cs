@@ -1,6 +1,7 @@
 using Game;
 using Game.Enums; // Contains the enum definitions for UpgradeType and WeaponType
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -75,7 +76,12 @@ namespace Assets.Scripts
 
         public void ResetUpgrades()
         {
-            player.ResetUpgrades();
+            player.Coins = (byte)(25 - Settings.weaponInfo[player.WeaponType].Price);
+            player.SetUpgrades(UpgradeType.Healing, 0);
+            player.SetUpgrades(UpgradeType.Health, 0);
+            player.SetUpgrades(UpgradeType.GpsShift, 0);
+            player.SetUpgrades(UpgradeType.Damping, 0);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
         public void InitWeaponScene()
         {

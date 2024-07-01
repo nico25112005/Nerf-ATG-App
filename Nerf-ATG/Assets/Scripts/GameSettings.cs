@@ -42,6 +42,8 @@ namespace Game
     public static class Settings
     {
         public static byte Coins = 25;
+        public static byte Healing = 4;
+        public static byte Health = 100;
 
         public static Dictionary<UpgradeType, UpgradeInfo> upgradeInfo = new()
         {

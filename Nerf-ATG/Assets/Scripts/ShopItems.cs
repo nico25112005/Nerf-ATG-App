@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.UI;
+using Game;
 
 namespace System.Runtime.CompilerServices
 {
@@ -30,38 +31,45 @@ namespace Assets.Scripts
         {
             // Update the price display, image, and add the upgrade button event listener
             upgradeTransform.transform.Find("PriceBackground").Find("Price").GetComponent<Text>().text =
-                                (Price.Length > player.upgradeLevel[Type]) ? Price.GetValue(player.upgradeLevel[Type]) + " C" : "MAX";
+                                (Price.Length > player.Upgrades[Type]) ? Price.GetValue(player.Upgrades[Type]) + " C" : "MAX";
             upgradeTransform.transform.Find("UpgradeImageBackground").Find("UpgradeImage").GetComponent<Image>().sprite = Image;
             upgradeTransform.transform.Find("UpgradeImageBackground").GetComponent<Button>().onClick.AddListener(() => { Buy(upgradeTransform); }); // Set button event
 
             // Update the progress bar length based on upgrade levels
             upgradeTransform.transform.Find("ProgressbarBackground").Find("Progressbar").GetComponent<RectTransform>().sizeDelta =
-                new Vector2((upgradeTransform.GetComponent<RectTransform>().rect.width - 20) / Price.Length * player.upgradeLevel[Type],
+                new Vector2((upgradeTransform.GetComponent<RectTransform>().rect.width - 20) / Price.Length * player.Upgrades[Type],
                 upgradeTransform.transform.Find("ProgressbarBackground").Find("Progressbar").GetComponent<RectTransform>().rect.height); // Set progress bar to correct length;
         }
 
         void Buy(GameObject upgradeTransform)
         {
-            if (Price.Length == player.upgradeLevel[Type])
+            if (Price.Length == player.Upgrades[Type])
             {
                 Debug.Log("maximum upgrades");
                 return;
             }
-            if (player.Coins - Price[player.upgradeLevel[Type]] < 0)
+            if (player.Coins - Price[player.Upgrades[Type]] < 0)
             {
                 Debug.Log("zu wenig geld");
                 return;
             }
             // Player buying the upgrade
-            if (player.BuyUpgrade(Type, (byte)Price.GetValue(player.upgradeLevel[Type]), (byte)Price.Length))
+            //player.BuyUpgrade(Type, (byte)Price.GetValue(player.Upgrades[Type]), (byte)Price.Length) --> Old
+
+            if (player.Coins - (byte)Price.GetValue(player.Upgrades[Type]) >= 0 && (byte)Price.Length > player.Upgrades[Type])
             {
+                //pay
+                player.Coins -= (byte)Price.GetValue(player.Upgrades[Type]);
+                player.SetUpgrades(Type, (byte)(player.Upgrades[Type] + 1));
+
+
                 // Update the progress bar and price
                 upgradeTransform.transform.Find("ProgressbarBackground").Find("Progressbar").GetComponent<RectTransform>().sizeDelta =
-                    new Vector2((upgradeTransform.GetComponent<RectTransform>().rect.width - 20) / Price.Length * player.upgradeLevel[Type],
+                    new Vector2((upgradeTransform.GetComponent<RectTransform>().rect.width - 20) / Price.Length * player.Upgrades[Type],
                     upgradeTransform.transform.Find("ProgressbarBackground").Find("Progressbar").GetComponent<RectTransform>().rect.height); // Set progress bar to correct length
 
                 upgradeTransform.transform.Find("PriceBackground").Find("Price").GetComponent<Text>().text =
-                    (Price.Length > player.upgradeLevel[Type]) ? Price.GetValue(player.upgradeLevel[Type]) + " C" : "MAX";
+                    (Price.Length > player.Upgrades[Type]) ? Price.GetValue(player.Upgrades[Type]) + " C" : "MAX";
             }
             Debug.Log(player.ToString());
         }
@@ -100,6 +108,7 @@ namespace Assets.Scripts
         void SelectWeapon()
         {
             player.WeaponType = Type;
+            player.Coins = (byte)(Settings.Coins - Settings.weaponInfo[Type].Price);
         }
     }
 }

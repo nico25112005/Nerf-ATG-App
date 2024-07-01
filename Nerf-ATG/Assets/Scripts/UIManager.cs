@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Game.Enums;
+using Game;
+using System.Data;
 
 namespace Assets.Scripts
 {
@@ -13,8 +17,6 @@ namespace Assets.Scripts
         private Player player;
         private BluetoothManager bluetooth;
         private string connectingDevice;
-
-        
         
         void OnWeaponSelect(object sender, EventArgs e)
         {
@@ -39,22 +41,37 @@ namespace Assets.Scripts
                 uiObjects[1].GetComponent<Text>().color = Color.gray;
             }
         }
-
-        void Start()
+        void OnUpgradeChange(object sender, EventArgs e)
         {
-            Debug.Log("UI-Manager Start");
+            string result = string.Format("Health: {0}\n", player.Health);
+            result += string.Format("{0}: {1} hp/s\n", UpgradeType.Healing, player.Upgrades[UpgradeType.Healing] * 2 + Settings.Healing);
+            result += string.Format("{0}: {1} m\n", UpgradeType.GpsShift, player.Upgrades[UpgradeType.GpsShift] * 5);
+            result += string.Format("Sound: {0} %", 100 - player.Upgrades[UpgradeType.Damping] * 50);
+            uiObjects[3].GetComponent<Text>().text = result;
+        }
+
+        void Awake()
+        {
             player = Player.GetInstance();
             bluetooth = BluetoothManager.GetInstance();
 
             player.WeaponTypeChanged += OnWeaponSelect;
             player.CoinsChanged += OnCoinsChange;
+            player.UpgradesChanged += OnUpgradeChange;
             bluetooth.NewDevice += OnNewDevice;
             bluetooth.ConnectionChanged += OnConnectionChange;
-            Debug.Log("UI-Manager Start Finished");
 
             SceneDepandantManagerStart();
         }
 
+        private void OnDestroy()
+        {
+            player.WeaponTypeChanged -= OnWeaponSelect;
+            player.CoinsChanged -= OnCoinsChange;
+            player.UpgradesChanged -= OnUpgradeChange;
+            bluetooth.NewDevice -= OnNewDevice;
+            bluetooth.ConnectionChanged -= OnConnectionChange;
+        }
         void SceneDepandantManagerStart()
         {
             switch (SceneManager.GetActiveScene().buildIndex)
@@ -67,11 +84,10 @@ namespace Assets.Scripts
                     uiObjects[1].GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
                     break;
                 case 2:
+                    uiObjects[2].GetComponent<Text>().text = player.Coins.ToString() + " C";
                     uiObjects[1].GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
                     uiObjects[0].GetComponent<Text>().text = player.TeamInfo.ToString();
-                    break;
-
-                default:
+                    OnUpgradeChange(new object(), EventArgs.Empty);
                     break;
             }
         }
