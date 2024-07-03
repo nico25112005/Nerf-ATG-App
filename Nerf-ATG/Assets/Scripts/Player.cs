@@ -3,7 +3,6 @@ using Game;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using UnityEngine;
 
 public class Player
 {
@@ -15,12 +14,17 @@ public class Player
     private byte health;
     private byte coins;
     private WeaponType weaponType;
+    private byte ammo;
+    private int maxAmmo;
 
     public event EventHandler<EventArgs> TeamInfoChanged;
     public event EventHandler<EventArgs> HealthChanged;
     public event EventHandler<EventArgs> CoinsChanged;
     public event EventHandler<EventArgs> WeaponTypeChanged;
     public event EventHandler<EventArgs> UpgradesChanged;
+    public event EventHandler<EventArgs> AmmoChanged;
+    public event EventHandler<EventArgs> MaxAmmoChanged;
+
 
     private Player()
     {
@@ -90,6 +94,32 @@ public class Player
             {
                 coins = value;
                 CoinsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+    }
+
+    public byte Ammo
+    {
+        get { return ammo; }
+        set
+        {
+            if (ammo != value)
+            {
+                ammo = value;
+                AmmoChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+    }
+
+    public int MaxAmmo
+    {
+        get { return maxAmmo; }
+        set
+        {
+            if (maxAmmo != value)
+            {
+                maxAmmo = value;
+                MaxAmmoChanged?.Invoke(this, EventArgs.Empty);
             }
         }
     }

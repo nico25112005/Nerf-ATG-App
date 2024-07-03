@@ -81,7 +81,6 @@ namespace Assets.Scripts
     public record WeponInfo(WeaponType Type, byte Price, Sprite Image, byte BulletsPerShot, float TimeAfterBullet , int MaxAmmo, byte AmmoPerMag, Abilitys Abilitys, float ReloadTime, float ShotTime, byte Damage) : IShopItems
     {
         readonly Player player = Player.GetInstance(); // Get player instance
-        readonly BluetoothManager bluetooth = new();
         public byte UpgradesPerRow => 3;
 
         public byte UpgradesPerColumn => 1;

@@ -12,6 +12,14 @@ public class BluetoothManager : MonoBehaviour
     private static BluetoothManager instance;
     private static readonly object _lock = new();
 
+    void EnsureMainThreadDispatcher()
+    {
+        if (FindObjectOfType<MainThreadDispatcher>() == null)
+        {
+            GameObject dispatcher = new GameObject("MainThreadDispatcher");
+            dispatcher.AddComponent<MainThreadDispatcher>();
+        }
+    }
     public static BluetoothManager GetInstance()
     {
 
@@ -34,6 +42,8 @@ public class BluetoothManager : MonoBehaviour
 
     public event EventHandler<string> NewDevice;
     public event EventHandler<bool> ConnectionChanged;
+    public event EventHandler<string> NewData;
+
 
     private bool connected;
     public bool Connected
@@ -70,6 +80,7 @@ public class BluetoothManager : MonoBehaviour
     void Start()
     {
         InitBluetooth();
+        EnsureMainThreadDispatcher();
     }
 
     // creating an instance of the bluetooth class from the plugin 
@@ -199,7 +210,7 @@ public class BluetoothManager : MonoBehaviour
     // DO NOT CHANGE ITS NAME OR IT WILL NOT BE FOUND BY THE JAVA CLASS
     public void ReadData(string data)
     {
-        Debug.Log("BT Stream: " + data);
+        NewData?.Invoke(this, data);
     }
 
     // Write data to the connected BT device

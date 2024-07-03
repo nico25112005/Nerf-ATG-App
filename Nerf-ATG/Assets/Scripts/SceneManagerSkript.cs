@@ -28,7 +28,9 @@ public class SceneManagerSkript : MonoBehaviour
                 break;
 
             case 2:
-                bluetooth.WriteData(player.ToString());
+                bluetooth.WriteData(player.ToString() + "\n\n");
+                Settings.Health = player.Health;
+                Settings.Healing += (byte)(player.Upgrades[UpgradeType.Healing] * 2);
                 break;
 
             default:
@@ -37,6 +39,7 @@ public class SceneManagerSkript : MonoBehaviour
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
+
     public void Quit()
     {
         bluetooth.StopConnection();
