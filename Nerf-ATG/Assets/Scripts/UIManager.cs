@@ -21,6 +21,7 @@ namespace Assets.Scripts
         // ---- Events ---- //
         void OnHealthChange(object sender, EventArgs e)
         {
+            uiObjects[4].transform.Find("TextBackground").Find("Text").GetComponent<Text>().text = "Health: " + player.Health.ToString();
             uiObjects[4].transform.Find("Progressbar").GetComponent<RectTransform>().sizeDelta =
                new Vector2((uiObjects[4].GetComponent<RectTransform>().rect.width - 20) / Settings.Health * player.Health,
                uiObjects[4].transform.Find("Progressbar").GetComponent<RectTransform>().rect.height);
@@ -28,6 +29,7 @@ namespace Assets.Scripts
 
         void OnAmmoChange(object sender, EventArgs e)
         {
+            uiObjects[5].transform.Find("TextBackground").Find("Text").GetComponent<Text>().text = "Ammo: " + player.Ammo.ToString();
             uiObjects[5].transform.Find("Progressbar").GetComponent<RectTransform>().sizeDelta =
                new Vector2((uiObjects[5].GetComponent<RectTransform>().rect.width - 20) / Settings.weaponInfo[player.WeaponType].AmmoPerMag * player.Ammo,
                uiObjects[5].transform.Find("Progressbar").GetComponent<RectTransform>().rect.height);
@@ -35,6 +37,7 @@ namespace Assets.Scripts
 
         void OnMaxAmmoChange(object sender, EventArgs e)
         {
+            uiObjects[6].transform.Find("TextBackground").Find("Text").GetComponent<Text>().text = "Left Ammo: " + player.MaxAmmo.ToString();
             uiObjects[6].transform.Find("Progressbar").GetComponent<RectTransform>().sizeDelta =
                new Vector2((uiObjects[6].GetComponent<RectTransform>().rect.width - 20) / Settings.weaponInfo[player.WeaponType].MaxAmmo * player.MaxAmmo,
                uiObjects[6].transform.Find("Progressbar").GetComponent<RectTransform>().rect.height);
@@ -186,29 +189,64 @@ namespace Assets.Scripts
         {
             BluetoothManager threadBluetooth = BluetoothManager.GetInstance();
             string data = (string)state;
-            short hexData = Convert.ToInt16(data, 16);
-            Debug.Log($"HexData: {hexData:X}");
-            Debug.Log($"HexData: {(hexData & 0XFF00):X}");
-            Debug.Log($"HexData: {(hexData >> 8):X}");
-
-            Debug.LogWarning(player.Health);
-            if ((hexData & 0xFF00) != 0)
+            Debug.Log("Data:" + data);
+            try
             {
-                try
-                {
-                    Debug.Log(player.Health);
-                    MainThreadDispatcher.Execute(() => player.Health -= (byte)(hexData >> 8));
+                data.Replace(" ", "").Replace("\t", "").Replace("\n", "");
+                Debug.Log("Data1:" + data);
+
+                if (data.Length != 4) throw new Exception("Wrong data sent");
+
+                short hexData = Convert.ToInt16(data, 16);
+
+                Debug.Log($"Data: {hexData:X}");
+                if ((hexData & 0xFF00) != 0)
+{
+                    if(player.Health - (byte)(hexData >> 8) >= 0)
+                    {
+                        MainThreadDispatcher.Execute(() => player.Health -= (byte)(hexData >> 8));
+                    }
+                    else throw new Exception("To less hp");
                 }
-                catch (Exception e)
+
+                if ((hexData & 0x00F0) != 0)
                 {
-                    MainThreadDispatcher.Execute(() => threadBluetooth.WriteData("Received Data: " + e.StackTrace));
-                    Debug.LogError(e.StackTrace); 
+                    if(player.Ammo - (byte)((hexData & 0x00F0) >> 4) >= 0)
+                    {
+                        MainThreadDispatcher.Execute(() => player.Ammo -= (byte)((hexData & 0x00F0) >> 4));
+                    }
+                    else throw new Exception("To less ammo");
                 }
+
+                if ((hexData & 0x00F) != 0)
+                {
+
+                    if (player.MaxAmmo - (Settings.weaponInfo[player.WeaponType].AmmoPerMag - player.Ammo) >= 0)
+                    {
+                        MainThreadDispatcher.Execute(() =>
+                        {
+                            player.MaxAmmo -= (Settings.weaponInfo[player.WeaponType].AmmoPerMag - player.Ammo);
+                            player.Ammo = Settings.weaponInfo[player.WeaponType].AmmoPerMag;
+                        });
+                    }
+                    else
+                    {
+                        MainThreadDispatcher.Execute(() =>
+                        {
+                            player.Ammo += (byte)player.MaxAmmo;
+                            player.MaxAmmo = 0;
+                        });
+                    }
+                }
+
             }
-            Debug.LogWarning(player.Health);
+            catch (Exception e)
+            {
+                Debug.LogError(e.StackTrace);
+            }
 
             // Use MainThreadDispatcher to call WriteData on the main thread
-            MainThreadDispatcher.Execute(() => threadBluetooth.WriteData("Received Data: " + data));        }
+            MainThreadDispatcher.Execute(() => threadBluetooth.WriteData("Received Data: " + data +"\n"));        }
     }
 
 }
