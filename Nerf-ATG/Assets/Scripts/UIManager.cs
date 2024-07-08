@@ -1,11 +1,14 @@
 using Game;
 using Game.Enums;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Android;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -112,6 +115,8 @@ namespace Assets.Scripts
         }
         private void OnDestroy()
         {
+            StopCoroutine(InitGPS());
+
             player.WeaponTypeChanged -= OnWeaponSelect;
             player.CoinsChanged -= OnCoinsChange;
             player.UpgradesChanged -= OnUpgradeChange;
@@ -152,6 +157,7 @@ namespace Assets.Scripts
                     OnUpgradeChange(new object(), EventArgs.Empty);
                     OnHealthChange(new object(), EventArgs.Empty);
 
+                    StartCoroutine(InitGPS());
                     break;
             }
         }
@@ -192,7 +198,6 @@ namespace Assets.Scripts
             Debug.Log("Data:" + data);
             try
             {
-                data.Replace(" ", "").Replace("\t", "").Replace("\n", "");
                 Debug.Log("Data1:" + data);
 
                 if (data.Length != 4) throw new Exception("Wrong data sent");
@@ -246,7 +251,95 @@ namespace Assets.Scripts
             }
 
             // Use MainThreadDispatcher to call WriteData on the main thread
-            MainThreadDispatcher.Execute(() => threadBluetooth.WriteData("Received Data: " + data +"\n"));        }
+            MainThreadDispatcher.Execute(() => threadBluetooth.WriteData("Received Data: " + data +"\n"));
+        }
+
+        // ----- GPS Location ----- //
+
+        IEnumerator InitGPS()
+        {
+            #if UNITY_ANDROID
+            if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
+            {
+                Permission.RequestUserPermission(Permission.FineLocation);
+                yield return new WaitForSeconds(1); // Geben Sie dem Benutzer Zeit, auf das Dialogfeld zu reagieren
+            }
+            #endif
+
+            if (!Input.location.isEnabledByUser)
+            {
+                yield break;
+            }
+
+            Input.location.Start(0.5f, 0.5f);
+
+            // Wait until service initializes
+            int maxWait = 20;
+            while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
+            {
+                yield return new WaitForSeconds(1);
+                maxWait--;
+            }
+
+            // Service didn't initialize in 20 seconds
+            if (maxWait < 1)
+            {
+                bluetooth.Toast("Didn't initialize GPS");
+                yield break;
+            }
+
+            // Connection has failed
+            if (Input.location.status == LocationServiceStatus.Failed)
+            {
+                bluetooth.Toast("Unable to determine device location");
+                yield break;
+            }
+            else
+            {
+                //Acces granted
+                bluetooth.Toast("GPS initialized");
+                InvokeRepeating("UpdateGPS", 0f, 2f);
+            }
+        }
+        
+        private void UpdateGPS()
+        {            
+            Debug.Log(Input.location.status);
+            if(Input.location.status == LocationServiceStatus.Running)
+            {
+                try
+                {
+                    Debug.LogWarning(Input.location.lastData.latitude);
+                    Debug.LogWarning(Input.location.lastData.longitude);
+                    Debug.LogWarning(Input.location.lastData.verticalAccuracy);
+                    Debug.LogWarning(Input.location.lastData.horizontalAccuracy);
+                    Debug.LogWarning(Input.location.lastData.timestamp);
+                    Debug.LogWarning(Input.location.lastData.altitude);
+                    Debug.LogWarning("------------------------");
+
+                    player.GPSData.Longitude = Input.location.lastData.longitude;
+                    player.GPSData.Latitude = Input.location.lastData.latitude;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e.StackTrace);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("GPS not running");
+            }
+
+            Debug.Log("Longitude:");
+            Debug.Log(player.GPSData.Longitude);
+            Debug.Log("Latitude:");
+            Debug.Log(player.GPSData.Latitude);
+            Debug.Log("Hexcode:");
+            Debug.Log($"{player.GPSData.SerialData:X}");
+
+        }
+
+
     }
 
 }

@@ -3,6 +3,8 @@ using Game;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using UnityEngine.UIElements.Experimental;
+using UnityEngine;
 
 public class Player
 {
@@ -16,6 +18,9 @@ public class Player
     private WeaponType weaponType;
     private byte ammo;
     private int maxAmmo;
+    private GPSData gpsData = new();
+
+
 
     public event EventHandler<EventArgs> TeamInfoChanged;
     public event EventHandler<EventArgs> HealthChanged;
@@ -24,7 +29,7 @@ public class Player
     public event EventHandler<EventArgs> UpgradesChanged;
     public event EventHandler<EventArgs> AmmoChanged;
     public event EventHandler<EventArgs> MaxAmmoChanged;
-
+    public event EventHandler<EventArgs> GpsDataChanged;
 
     private Player()
     {
@@ -134,6 +139,16 @@ public class Player
                 weaponType = value;
                 WeaponTypeChanged?.Invoke(this, EventArgs.Empty);
             }
+        }
+    }
+
+    public GPSData GPSData
+    {
+        get { return gpsData; }
+        set
+        {
+            gpsData = value;
+            //GpsDataChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
