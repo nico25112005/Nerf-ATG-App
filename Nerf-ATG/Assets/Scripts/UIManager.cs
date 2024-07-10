@@ -9,6 +9,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Android;
+using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -94,6 +95,11 @@ namespace Assets.Scripts
             }
         }
 
+        public void OnGPSDataChange(object sender, EventArgs e)
+        {
+            StartCoroutine(LoadTileAndPlaceMarker());
+        }
+
         // ----Initialization ---- //
         void Start()
         {
@@ -106,6 +112,7 @@ namespace Assets.Scripts
             player.HealthChanged += OnHealthChange;
             player.AmmoChanged += OnAmmoChange;
             player.MaxAmmoChanged += OnMaxAmmoChange;
+            player.GpsDataChanged += OnGPSDataChange;
 
             bluetooth.NewDevice += OnNewDevice;
             bluetooth.ConnectionChanged += OnConnectionChange;
@@ -123,6 +130,7 @@ namespace Assets.Scripts
             player.HealthChanged -= OnHealthChange;
             player.AmmoChanged -= OnAmmoChange;
             player.MaxAmmoChanged -= OnMaxAmmoChange;
+            player.GpsDataChanged -= OnGPSDataChange;
 
             bluetooth.NewDevice -= OnNewDevice;
             bluetooth.ConnectionChanged -= OnConnectionChange;
@@ -162,7 +170,7 @@ namespace Assets.Scripts
             }
         }
 
-        // ---------- Scene 1 ---------- //
+        // Buttons //
         public void Connect()
         {
             Debug.Log(connectingDevice);
@@ -181,6 +189,12 @@ namespace Assets.Scripts
             uiObjects[4].GetComponent<Text>().text = "";
             connectingDevice = null;
             bluetooth.StartScanDevices();
+        }
+
+        public void SetBaseLocation()
+        {
+            player.BaseLocation = player.GPSData;
+            uiObjects[7].SetActive(false);
         }
 
         // ----- Bluetooth Messages Processing ----- //
@@ -255,7 +269,6 @@ namespace Assets.Scripts
         }
 
         // ----- GPS Location ----- //
-
         IEnumerator InitGPS()
         {
             #if UNITY_ANDROID
@@ -296,29 +309,20 @@ namespace Assets.Scripts
             }
             else
             {
+                uiObjects[10].SetActive(true);
                 //Acces granted
                 bluetooth.Toast("GPS initialized");
-                InvokeRepeating("UpdateGPS", 0f, 2f);
+                InvokeRepeating("UpdateGPS", 0f, 1f);
             }
         }
         
         private void UpdateGPS()
         {            
-            Debug.Log(Input.location.status);
             if(Input.location.status == LocationServiceStatus.Running)
             {
                 try
                 {
-                    Debug.LogWarning(Input.location.lastData.latitude);
-                    Debug.LogWarning(Input.location.lastData.longitude);
-                    Debug.LogWarning(Input.location.lastData.verticalAccuracy);
-                    Debug.LogWarning(Input.location.lastData.horizontalAccuracy);
-                    Debug.LogWarning(Input.location.lastData.timestamp);
-                    Debug.LogWarning(Input.location.lastData.altitude);
-                    Debug.LogWarning("------------------------");
-
-                    player.GPSData.Longitude = Input.location.lastData.longitude;
-                    player.GPSData.Latitude = Input.location.lastData.latitude;
+                    player.SetGPSData(Input.location.lastData.longitude, Input.location.lastData.latitude);
                 }
                 catch (Exception e)
                 {
@@ -329,16 +333,95 @@ namespace Assets.Scripts
             {
                 Debug.LogWarning("GPS not running");
             }
-
-            Debug.Log("Longitude:");
-            Debug.Log(player.GPSData.Longitude);
-            Debug.Log("Latitude:");
-            Debug.Log(player.GPSData.Latitude);
-            Debug.Log("Hexcode:");
-            Debug.Log($"{player.GPSData.SerialData:X}");
-
         }
 
+        // ----- GPS Visualication ----- //
+
+        int zoom = 18;
+        Vector2Int currentTileCoords = Vector2Int.zero;
+
+        IEnumerator LoadTileAndPlaceMarker()
+        {
+            double latitude = player.GPSData.Latitude;
+            double longitude = player.GPSData.Longitude;
+            
+            Vector2Int newTileCoords = GPSToTile(latitude, longitude, zoom);
+
+            // Prüfen, ob neue Tile-Koordinaten erforderlich sind
+            if (currentTileCoords != newTileCoords)
+            {
+                currentTileCoords = newTileCoords; // Aktualisiere die aktuellen Tile-Koordinaten
+
+                string url = $"https://tile.openstreetmap.org/{zoom}/{currentTileCoords.x}/{currentTileCoords.y}.png";
+                Debug.LogWarning(url);
+
+                UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
+                yield return www.SendWebRequest();
+
+                if (www.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.Log(www.error);
+                }
+                else
+                {
+                    Texture2D texture = ((DownloadHandlerTexture)www.downloadHandler).texture;
+                    Debug.Log($"Texturewidth: {texture.width} Textureheight: {texture.height}");
+
+                    // Aktualisiere das UI-Element mit dem neuen Tile
+                    uiObjects[8].GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
+                }
+            }
+
+            // Entferne alle vorherigen Marker (wenn vorhanden)
+            foreach (Transform child in uiObjects[8].transform)
+            {
+                Destroy(child.gameObject);
+            }
+
+            // Platzierung des Markers auf der neuen Tile
+            PlaceMarkerOnTile(latitude, longitude, currentTileCoords);
+
+            if(player.BaseLocation != null)
+                PlaceMarkerOnTile(player.BaseLocation.Latitude, player.BaseLocation.Longitude, currentTileCoords);
+        }
+
+
+        void PlaceMarkerOnTile(double latitude, double longitude, Vector2Int tileCoords)
+        {
+            Vector2 tilePosition = GPSToTilePosition(latitude, longitude, tileCoords);
+            GameObject marker = Instantiate(uiObjects[9], new Vector3(tilePosition.x, tilePosition.y, 0), Quaternion.identity);
+            marker.transform.SetParent(uiObjects[8].transform, false);
+        }
+        void PlaceMarkerOnTile(double latitude, double longitude)
+        {
+            Vector2Int tileCoords = GPSToTile(latitude, longitude, zoom);
+            Vector2 tilePosition = GPSToTilePosition(latitude, longitude, tileCoords);
+            GameObject marker = Instantiate(uiObjects[9], new Vector3(tilePosition.x, tilePosition.y, 0), Quaternion.identity);
+            marker.transform.SetParent(uiObjects[8].transform, false);
+        }
+
+        Vector2Int GPSToTile(double latitude, double longitude, int zoom)
+        {
+            float latRad = (float)(latitude * Mathf.Deg2Rad);
+            int n = 1 << zoom;
+            int x = (int)((longitude + 180.0) / 360.0 * n);
+            int y = (int)((1.0 - Mathf.Log((float)(Mathf.Tan(latRad) + 1.0 / Mathf.Cos(latRad))) / Mathf.PI) / 2.0 * n);
+            Debug.LogWarning("GPSToTile");
+            Debug.LogWarning("X: " + x + " Y: " + y);
+            return new Vector2Int(x, y);
+        }
+
+        Vector2 GPSToTilePosition(double latitude, double longitude, Vector2Int tileCoords)
+        {
+            float latRad = (float)(latitude * Mathf.Deg2Rad);
+            int n = 1 << zoom;
+            float x = (float)(((longitude + 180.0) / 360.0 * n - tileCoords.x) * uiObjects[8].GetComponent<RectTransform>().rect.width);
+            Debug.LogWarning((float)(longitude + 180.0) / 360.0 * n - tileCoords.x);
+            float y = (float)(((1.0 - Mathf.Log((float)(Mathf.Tan(latRad) + 1.0 / Mathf.Cos(latRad))) / Mathf.PI) / 2.0 * n - tileCoords.y) * uiObjects[8].GetComponent<RectTransform>().rect.height * -1);
+            Debug.LogWarning("GPSToTilePosition");
+            Debug.LogWarning("X: " + x + " Y: " + y);
+            return new Vector2(x, y);
+        }
 
     }
 

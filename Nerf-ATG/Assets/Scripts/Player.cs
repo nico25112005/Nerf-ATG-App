@@ -18,7 +18,6 @@ public class Player
     private WeaponType weaponType;
     private byte ammo;
     private int maxAmmo;
-    private GPSData gpsData = new();
 
 
 
@@ -75,6 +74,7 @@ public class Player
         }
     }
 
+    public GPSData BaseLocation { get; set; }
     public Dictionary<UpgradeType, byte> Upgrades { get; private set; }
 
     public byte Health
@@ -142,13 +142,23 @@ public class Player
         }
     }
 
-    public GPSData GPSData
+    public GPSData GPSData { get; set; }
+
+    public void SetGPSData(double longitude,  double latitude)
     {
-        get { return gpsData; }
-        set
+        try
         {
-            gpsData = value;
-            //GpsDataChanged?.Invoke(this, EventArgs.Empty);
+            GPSData = new GPSData
+            {
+                Longitude = longitude,
+                Latitude = latitude
+            };
+            GpsDataChanged?.Invoke(this, EventArgs.Empty);
+
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e.StackTrace);
         }
     }
 
