@@ -1,5 +1,4 @@
 using System;
-
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -18,13 +17,11 @@ public class GPSData
             try
             {
                 latitude = value;
-                _ = CalculateSerialDataAsync();
+                _ = EncodeSerialDataAsync();
             }
             catch (Exception e)
             {
-
                 Debug.LogError(e.StackTrace);
-            
             }
         }
     }
@@ -37,13 +34,11 @@ public class GPSData
             try
             {
                 longitude = value;
-                _ = CalculateSerialDataAsync();
+                _ = EncodeSerialDataAsync();
             }
             catch (Exception e)
             {
-
                 Debug.LogError(e.StackTrace);
-            
             }
         }
     }
@@ -57,21 +52,22 @@ public class GPSData
                 return serialData;
             }
         }
-        private set
+        set
         {
             lock (_lock)
             {
                 serialData = value;
+                _ = DecodeSerialDataAsync(serialData); // Asynchrone Dekodierung aufrufen
             }
         }
     }
 
-    private async Task CalculateSerialDataAsync()
+    private async Task EncodeSerialDataAsync()
     {
-        SerialData = await Task.Run(() => CalculateSerialData());
+        serialData = await Task.Run(() => EncodeSerialData());
     }
 
-    private ulong CalculateSerialData()
+    private ulong EncodeSerialData()
     {
         double nominalLatitude = latitude + 90.0;
 
@@ -97,5 +93,46 @@ public class GPSData
         result |= (ulong)((lonDegrees << 17) | (lonMinutes << 11) | (lonSeconds << 5) | (lonMilliseconds)) << 26;
 
         return result;
+    }
+
+    private async Task DecodeSerialDataAsync(ulong hexCode)
+    {
+        (double newLatitude, double newLongitude) = await Task.Run(() => DecodeSerialData(hexCode));
+        lock (_lock)
+        {
+            latitude = newLatitude;
+            longitude = newLongitude;
+        }
+    }
+
+    public (double latitude, double longitude) DecodeSerialData(ulong hexCode)
+    {
+        // Extrahiere Latitude-Teile
+        ulong latCode = hexCode & 0x3FFFFFF;
+        short latDegrees = (short)((latCode >> 17) & 0x7F);
+        byte latMinutes = (byte)((latCode >> 11) & 0x3F);
+        byte latSeconds = (byte)((latCode >> 5) & 0x3F);
+        byte latMilliseconds = (byte)(latCode & 0x1F);
+
+        // Rekonstruiere Latitude
+        double latitude = latDegrees - 90.0;
+        latitude += (double)latMinutes / 60.0;
+        latitude += (double)latSeconds / 3600.0;
+        latitude += (double)latMilliseconds / (3600.0 * 32.0);
+
+        // Extrahiere Longitude-Teile
+        ulong lonCode = (hexCode >> 26) & 0x3FFFFFF;
+        short lonDegrees = (short)((lonCode >> 17) & 0xFF);
+        byte lonMinutes = (byte)((lonCode >> 11) & 0x3F);
+        byte lonSeconds = (byte)((lonCode >> 5) & 0x3F);
+        byte lonMilliseconds = (byte)(lonCode & 0x1F);
+
+        // Rekonstruiere Longitude
+        double longitude = lonDegrees - 180.0;
+        longitude += (double)lonMinutes / 60.0;
+        longitude += (double)lonSeconds / 3600.0;
+        longitude += (double)lonMilliseconds / (3600.0 * 32.0);
+
+        return (latitude, longitude);
     }
 }

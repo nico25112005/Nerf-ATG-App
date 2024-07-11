@@ -1,10 +1,11 @@
-﻿using Game.Enums;
-using Game;
-using System.Collections.Generic;
+﻿using Game;
+using Game.Enums;
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.UIElements.Experimental;
+//using System.Threading;
 using UnityEngine;
+using System.Timers;
 
 public class Player
 {
@@ -29,6 +30,8 @@ public class Player
     public event EventHandler<EventArgs> AmmoChanged;
     public event EventHandler<EventArgs> MaxAmmoChanged;
     public event EventHandler<EventArgs> GpsDataChanged;
+    public event EventHandler<GPSData> EnemyLocationChanged;
+    public event EventHandler<GPSData> TeamMateLocationChanged;
 
     private Player()
     {
@@ -46,7 +49,7 @@ public class Player
         };
 
         Coins = 25;
-        Health = 100;
+        Health = 10;
         TeamInfo = Team.Violet;
         WeaponType = WeaponType.None;
     }
@@ -144,8 +147,39 @@ public class Player
 
     public GPSData GPSData { get; set; }
 
-    public void SetGPSData(double longitude,  double latitude)
+    public List<GPSData> EnemyLocations { get; set; } = new List<GPSData>();
+    public List<GPSData> TeamMateLocations { get; set; } = new List<GPSData>();
+
+
+    public void SetEnemyLocation(string locationHexCode)
     {
+        EnemyLocations.Add(new GPSData
+        {
+            SerialData = ulong.Parse(locationHexCode)
+        });
+        EnemyLocationChanged?.Invoke(this, EnemyLocations.Last());
+    }
+
+    public void SetTeamMateLocation(string locationHexCode)
+    {
+        EnemyLocations.Add(new GPSData
+        {
+            SerialData = ulong.Parse(locationHexCode)
+        });
+        TeamMateLocationChanged?.Invoke(this, TeamMateLocations.Last());
+    }
+
+    Timer baseRefillTimer;
+
+    public void SetGPSData(double longitude, double latitude)
+    {
+        if(baseRefillTimer == null)
+        {
+            baseRefillTimer = new Timer(1000);
+            baseRefillTimer.AutoReset = true;
+            baseRefillTimer.Elapsed += BaseRefill;
+            baseRefillTimer.Start();
+        }
         try
         {
             GPSData = new GPSData
@@ -153,12 +187,69 @@ public class Player
                 Longitude = longitude,
                 Latitude = latitude
             };
+
             GpsDataChanged?.Invoke(this, EventArgs.Empty);
+
+            if (IsWithinBaseRadius(GPSData))
+            {
+                Debug.LogWarning("Base is within radius");
+                baseRefillTimer.Start();
+            }
+            else
+            {
+                baseRefillTimer.Stop();
+            }
 
         }
         catch (Exception e)
         {
             Debug.Log(e.StackTrace);
+        }
+    }
+
+    public void BaseRefill(object state, ElapsedEventArgs e)
+    {
+        Debug.LogWarning("Base refilling");
+        Debug.Log(Health);
+        Debug.Log(MaxAmmo);
+        if (Health + Settings.Healing <= Settings.Health)
+        {
+            MainThreadDispatcher.Execute(() =>
+            {
+                Health += Settings.Healing;
+                //HealthChanged?.Invoke(this, EventArgs.Empty);
+            });
+        }
+        else
+        {
+            if (Health < Settings.Health)
+            {
+                MainThreadDispatcher.Execute(() =>
+                {
+                    Health = Settings.Health;
+                    //HealthChanged?.Invoke(this, EventArgs.Empty);
+                });
+            }
+        }
+
+        if (MaxAmmo + (Settings.weaponInfo[weaponType].MaxAmmo / 10) <= Settings.weaponInfo[weaponType].MaxAmmo)
+        {
+            MainThreadDispatcher.Execute(() =>
+            {
+                MaxAmmo += (Settings.weaponInfo[weaponType].MaxAmmo / 10);
+                //MaxAmmoChanged?.Invoke(this, EventArgs.Empty);
+            });
+        }
+        else
+        {
+            if (MaxAmmo < Settings.weaponInfo[weaponType].MaxAmmo)
+            {
+                MainThreadDispatcher.Execute(() =>
+                {
+                    MaxAmmo = Settings.weaponInfo[weaponType].MaxAmmo;
+                    //MaxAmmoChanged?.Invoke(this, EventArgs.Empty);
+                });
+            }
         }
     }
 
@@ -182,5 +273,16 @@ public class Player
         }
 
         return result;
+    }
+
+    // Methode zur Überprüfung, ob der Spieler innerhalb des Basisradius ist
+    private bool IsWithinBaseRadius(GPSData currentLocation)
+    {
+        if (BaseLocation == null)
+            return false; // Basisposition nicht gesetzt
+
+        double distance = GPS.CalculateDistance(BaseLocation, currentLocation);
+        Debug.Log("Distance: " + distance);
+        return distance <= Settings.BaseRadius; // Überprüfung, ob die Distanz kleiner oder gleich 8 Metern ist
     }
 }

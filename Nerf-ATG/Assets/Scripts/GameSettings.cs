@@ -41,6 +41,8 @@ namespace Game
 
     public static class Settings
     {
+        public static byte BaseRadius = 5;
+
         public static byte Coins = 25;
         public static byte Healing = 4;
         public static byte Health = 100;
