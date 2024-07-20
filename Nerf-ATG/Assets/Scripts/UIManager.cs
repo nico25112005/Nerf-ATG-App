@@ -124,7 +124,6 @@ namespace Assets.Scripts
 
             bluetooth.NewDevice += OnNewDevice;
             bluetooth.ConnectionChanged += OnConnectionChange;
-            bluetooth.NewData += OnDataReceived;
 
             SceneDepandantManagerStart();
         }
@@ -144,7 +143,6 @@ namespace Assets.Scripts
 
             bluetooth.NewDevice -= OnNewDevice;
             bluetooth.ConnectionChanged -= OnConnectionChange;
-            bluetooth.NewData -= OnDataReceived;
         }
         void SceneDepandantManagerStart()
         {
@@ -164,7 +162,6 @@ namespace Assets.Scripts
                     OnUpgradeChange(new object(), EventArgs.Empty);
                     break;
                 case 3:
-                    Debug.Log(player.WeaponType);
 
                     player.MaxAmmo = Settings.weaponInfo[player.WeaponType].MaxAmmo;
                     player.Ammo = Settings.weaponInfo[player.WeaponType].AmmoPerMag;
@@ -176,6 +173,8 @@ namespace Assets.Scripts
                     OnHealthChange(new object(), EventArgs.Empty);
 
                     StartCoroutine(InitGPS());
+                    bluetooth.SendBaseInformations();
+
                     break;
             }
         }
@@ -208,78 +207,8 @@ namespace Assets.Scripts
             PlaceMarkerOnTile(uiObjects[9], player.BaseLocation.Latitude, player.BaseLocation.Longitude);
         }
 
-        // ----- Bluetooth Messages Processing ----- //
-
-        void OnDataReceived(object sender, string data)
-        {
-            // Processing data in a separate thread
-            ThreadPool.QueueUserWorkItem(ProcessData, data);
-        }
-
         
-
-        void ProcessData(object state) //Data: |00|00|0| Damage, Ammo, Reload
-        {
-            BluetoothManager threadBluetooth = BluetoothManager.GetInstance();
-            string data = (string)state;
-
-            try
-            {
-                if (data.Length != 5) throw new Exception("Wrong data sent");
-
-                int hexData = Convert.ToInt32(data, 16);
-
-                Debug.Log($"Data: {hexData:X}");
-                if ((hexData & 0xFF000) != 0)
-                {
-                    if (player.Health - (byte)(hexData >> 12) >= 0)
-                    {
-                        MainThreadDispatcher.Execute(() => player.Health -= (byte)(hexData >> 12));
-                    }
-                    else throw new Exception("To less hp");
-                }
-
-                if ((hexData & 0x00FF0) != 0)
-                {
-                    if (player.Ammo - (byte)((hexData & 0x00FF0) >> 4) >= 0)
-                    {
-                        MainThreadDispatcher.Execute(() => player.Ammo -= (byte)((hexData & 0x00FF0) >> 4));
-                    }
-                    else throw new Exception("To less ammo");
-                }
-
-                if ((hexData & 0x0000F) != 0)
-                {
-
-                    if (player.MaxAmmo - (Settings.weaponInfo[player.WeaponType].AmmoPerMag - player.Ammo) >= 0)
-                    {
-                        MainThreadDispatcher.Execute(() =>
-                        {
-                            player.MaxAmmo -= (Settings.weaponInfo[player.WeaponType].AmmoPerMag - player.Ammo);
-                            player.Ammo = Settings.weaponInfo[player.WeaponType].AmmoPerMag;
-                        });
-                    }
-                    else
-                    {
-                        MainThreadDispatcher.Execute(() =>
-                        {
-                            player.Ammo += (byte)player.MaxAmmo;
-                            player.MaxAmmo = 0;
-                        });
-                    }
-                }
-
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e.StackTrace);
-            }
-
-            // Use MainThreadDispatcher to call WriteData on the main thread
-            MainThreadDispatcher.Execute(() => threadBluetooth.WriteData("Received Data: " + data + "\n"));
-        }
-
-        // ----- GPS Location ----- //
+        //----- GPS Location ----- //
         IEnumerator InitGPS()
         {
 #if UNITY_ANDROID

@@ -5,12 +5,18 @@ using UnityEngine;
 using UnityEngine.UI;
 using Unity.VisualScripting;
 using System;
+using Game;
+using Game.Enums;
 using Assets.Scripts;
+using System.Threading;
 
 public class BluetoothManager : MonoBehaviour
 {
     private static BluetoothManager instance;
     private static readonly object _lock = new();
+
+    protected Player player = Player.GetInstance();
+
 
     void EnsureMainThreadDispatcher()
     {
@@ -42,8 +48,6 @@ public class BluetoothManager : MonoBehaviour
 
     public event EventHandler<string> NewDevice;
     public event EventHandler<bool> ConnectionChanged;
-    public event EventHandler<string> NewData;
-
 
     private bool connected;
     public bool Connected
@@ -210,7 +214,7 @@ public class BluetoothManager : MonoBehaviour
     // DO NOT CHANGE ITS NAME OR IT WILL NOT BE FOUND BY THE JAVA CLASS
     public void ReadData(string data)
     {
-        NewData?.Invoke(this, data);
+        ThreadPool.QueueUserWorkItem(ProcessData, data);
     }
 
     // Write data to the connected BT device
@@ -238,5 +242,79 @@ public class BluetoothManager : MonoBehaviour
             return;
 
         BluetoothConnector.CallStatic("Toast", data);
+    }
+
+
+    // Own Functions //
+
+    void ProcessData(object state) //Data: |00|00|0| Damage, Ammo, Reload
+    {
+        BluetoothManager threadBluetooth = BluetoothManager.GetInstance();
+        string data = (string)state;
+
+        try
+        {
+            if (data.Length != 5) throw new Exception("Wrong data sent");
+
+            int hexData = Convert.ToInt32(data, 16);
+
+            Debug.Log($"Data: {hexData:X}");
+            if ((hexData & 0xFF000) != 0)
+            {
+                if (player.Health - (byte)(hexData >> 12) >= 0)
+                {
+                    MainThreadDispatcher.Execute(() => player.Health -= (byte)(hexData >> 12));
+                }
+                else throw new Exception("To less hp");
+            }
+
+            if ((hexData & 0x00FF0) != 0)
+            {
+                if (player.Ammo - (byte)((hexData & 0x00FF0) >> 4) >= 0)
+                {
+                    MainThreadDispatcher.Execute(() => player.Ammo -= (byte)((hexData & 0x00FF0) >> 4));
+                }
+                else throw new Exception("To less ammo");
+            }
+
+            if ((hexData & 0x0000F) != 0)
+            {
+
+                if (player.MaxAmmo - (Settings.weaponInfo[player.WeaponType].AmmoPerMag - player.Ammo) >= 0)
+                {
+                    MainThreadDispatcher.Execute(() =>
+                    {
+                        player.MaxAmmo -= (Settings.weaponInfo[player.WeaponType].AmmoPerMag - player.Ammo);
+                        player.Ammo = Settings.weaponInfo[player.WeaponType].AmmoPerMag;
+                    });
+                }
+                else
+                {
+                    MainThreadDispatcher.Execute(() =>
+                    {
+                        player.Ammo += (byte)player.MaxAmmo;
+                        player.MaxAmmo = 0;
+                    });
+                }
+            }
+
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e.StackTrace);
+        }
+
+        // Use MainThreadDispatcher to call WriteData on the main thread
+        MainThreadDispatcher.Execute(() => threadBluetooth.WriteData("Received Data: " + data + "\n"));
+    }
+
+    public void SendBaseInformations()
+    {
+        int data = player.Health;
+        data += (player.Upgrades[UpgradeType.Damping] << 8);
+        data += (((byte)player.WeaponType) << 10);
+        data += (((byte)player.TeamInfo) << 12);
+
+        WriteData(data.ToString("X"));
     }
 }
