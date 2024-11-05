@@ -132,6 +132,8 @@ public class Player
         }
     }
 
+    public bool AbilityActivated { get; set; } = false;
+
     public WeaponType WeaponType
     {
         get { return weaponType; }
@@ -155,22 +157,21 @@ public class Player
     {
         EnemyLocations.Add(new GPSData
         {
-            SerialData = ulong.Parse(locationHexCode)
+            SerialData = Convert.ToUInt64(locationHexCode, 16)
         });
         EnemyLocationChanged?.Invoke(this, EnemyLocations.Last());
     }
 
     public void SetTeamMateLocation(string locationHexCode)
     {
-        EnemyLocations.Add(new GPSData
+        TeamMateLocations.Add(new GPSData
         {
-            SerialData = ulong.Parse(locationHexCode)
+            SerialData = Convert.ToUInt64(locationHexCode, 16)
         });
         TeamMateLocationChanged?.Invoke(this, TeamMateLocations.Last());
     }
 
     Timer baseRefillTimer;
-
     public void SetGPSData(double longitude, double latitude)
     {
         if(baseRefillTimer == null)
@@ -180,6 +181,7 @@ public class Player
             baseRefillTimer.Elapsed += BaseRefill;
             baseRefillTimer.Start();
         }
+
         try
         {
             GPSData = new GPSData
@@ -190,9 +192,8 @@ public class Player
 
             GpsDataChanged?.Invoke(this, EventArgs.Empty);
 
-            if (IsWithinBaseRadius(GPSData))
+            if (GPS.IsWithinRadius(GPSData, BaseLocation, Settings.BaseRadius))
             {
-                Debug.LogWarning("Base is within radius");
                 baseRefillTimer.Start();
             }
             else
@@ -203,15 +204,13 @@ public class Player
         }
         catch (Exception e)
         {
-            Debug.Log(e.StackTrace);
+            Debug.LogException(e);
         }
     }
 
     public void BaseRefill(object state, ElapsedEventArgs e)
     {
         Debug.LogWarning("Base refilling");
-        Debug.Log(Health);
-        Debug.Log(MaxAmmo);
         if (Health + Settings.Healing <= Settings.Health)
         {
             MainThreadDispatcher.Execute(() =>
@@ -273,16 +272,5 @@ public class Player
         }
 
         return result;
-    }
-
-    // Methode zur Überprüfung, ob der Spieler innerhalb des Basisradius ist
-    private bool IsWithinBaseRadius(GPSData currentLocation)
-    {
-        if (BaseLocation == null)
-            return false; // Basisposition nicht gesetzt
-
-        double distance = GPS.CalculateDistance(BaseLocation, currentLocation);
-        Debug.Log("Distance: " + distance);
-        return distance <= Settings.BaseRadius; // Überprüfung, ob die Distanz kleiner oder gleich 8 Metern ist
     }
 }

@@ -8,9 +8,6 @@ public class GPS : MonoBehaviour
 {
     public static double CalculateDistance(GPSData gps1, GPSData gps2)
     {
-        Debug.LogWarning("Gps1:" + gps1.Longitude + " " + gps1.Latitude);
-        Debug.LogWarning("Gps2:" + gps2.Longitude + " " + gps2.Latitude);
-
         double dlon = gps2.Longitude - gps1.Longitude;
         double dlat = gps2.Latitude - gps1.Latitude;
 
@@ -21,4 +18,13 @@ public class GPS : MonoBehaviour
         return distance;
     }
 
+    public static bool IsWithinRadius(GPSData location1, GPSData location2, float radius)
+    {
+        if (location1 == null || location2 == null)
+            return false;
+
+        double distance = GPS.CalculateDistance(location1, location2);
+        Debug.Log("Distance: " + distance);
+        return distance <= radius; // Überprüfung, ob die Distanz kleiner oder gleich 8 Metern ist
+    }
 }

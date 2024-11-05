@@ -1,14 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine.Android;
-using UnityEngine;
-using UnityEngine.UI;
-using Unity.VisualScripting;
-using System;
 using Game;
 using Game.Enums;
-using Assets.Scripts;
+using System;
+using System.Collections.Generic;
 using System.Threading;
+using UnityEngine;
+using UnityEngine.Android;
+
 
 public class BluetoothManager : MonoBehaviour
 {
@@ -151,8 +148,6 @@ public class BluetoothManager : MonoBehaviour
     // DO NOT CHANGE ITS NAME OR IT WILL NOT BE FOUND BY THE JAVA CLASS
     public void NewDeviceFound(string data)
     {
-        Debug.Log(data);
-        Debug.Log(data.Split("+")[1]);
 
         if (data.Split("+")[1] != "null")
         {
@@ -162,7 +157,6 @@ public class BluetoothManager : MonoBehaviour
                 Debug.Log("NewDevice not subscribed to");
                 return;
             }
-            Debug.Log("Should invoke");
             NewDevice.Invoke(this, data.Split("+")[1]);
         }
     }
@@ -214,6 +208,7 @@ public class BluetoothManager : MonoBehaviour
     // DO NOT CHANGE ITS NAME OR IT WILL NOT BE FOUND BY THE JAVA CLASS
     public void ReadData(string data)
     {
+        Debug.LogWarning("Read Data: " + data);
         ThreadPool.QueueUserWorkItem(ProcessData, data);
     }
 
@@ -247,65 +242,139 @@ public class BluetoothManager : MonoBehaviour
 
     // Own Functions //
 
-    void ProcessData(object state) //Data: |00|00|0| Damage, Ammo, Reload
+    void ProcessData(object state)
     {
         BluetoothManager threadBluetooth = BluetoothManager.GetInstance();
         string data = (string)state;
 
+        bool gpsRequest = false;
+
+        string teammatesLocation = "";
+        string enemysLocation = "";
+
         try
         {
-            if (data.Length != 5) throw new Exception("Wrong data sent");
-
-            int hexData = Convert.ToInt32(data, 16);
-
-            Debug.Log($"Data: {hexData:X}");
-            if ((hexData & 0xFF000) != 0)
+            if (data.Length > 4) //Recived Data: TeamMate1 / TeamMate2 # Enemy1 / Enemy2 ...
             {
-                if (player.Health - (byte)(hexData >> 12) >= 0)
+                if (data.Split("#").Length != 2)
                 {
-                    MainThreadDispatcher.Execute(() => player.Health -= (byte)(hexData >> 12));
-                }
-                else throw new Exception("To less hp");
-            }
-
-            if ((hexData & 0x00FF0) != 0)
-            {
-                if (player.Ammo - (byte)((hexData & 0x00FF0) >> 4) >= 0)
-                {
-                    MainThreadDispatcher.Execute(() => player.Ammo -= (byte)((hexData & 0x00FF0) >> 4));
-                }
-                else throw new Exception("To less ammo");
-            }
-
-            if ((hexData & 0x0000F) != 0)
-            {
-
-                if (player.MaxAmmo - (Settings.weaponInfo[player.WeaponType].AmmoPerMag - player.Ammo) >= 0)
-                {
-                    MainThreadDispatcher.Execute(() =>
-                    {
-                        player.MaxAmmo -= (Settings.weaponInfo[player.WeaponType].AmmoPerMag - player.Ammo);
-                        player.Ammo = Settings.weaponInfo[player.WeaponType].AmmoPerMag;
-                    });
+                    if (data.StartsWith("#"))
+                        enemysLocation = data.Substring(1);  // Entfernt das führende "#"
+                    else
+                        teammatesLocation = data;
                 }
                 else
                 {
-                    MainThreadDispatcher.Execute(() =>
-                    {
-                        player.Ammo += (byte)player.MaxAmmo;
-                        player.MaxAmmo = 0;
-                    });
+                    // Teilt die Daten auf, wenn zwei Teile existieren
+                    teammatesLocation = data.Split("#")[0];
+                    enemysLocation = data.Split("#")[1];
                 }
+
+                try
+                {
+                    // Nur wenn teammatesLocation Daten enthält, wird sie verarbeitet
+                    if (!string.IsNullOrEmpty(teammatesLocation))
+                    {
+                        foreach (string teammateGPSData in teammatesLocation.Split("/"))
+                        {
+                            player.SetTeamMateLocation(teammateGPSData);
+                        }
+                    }
+
+                    // Nur wenn enemysLocation Daten enthält, wird sie verarbeitet
+                    if (!string.IsNullOrEmpty(enemysLocation))
+                    {
+                        foreach (string enemyGPSData in enemysLocation.Split("/"))
+                        {
+                            player.SetEnemyLocation(enemyGPSData);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
+
+            }
+            else // Recived Data: | 0000 0000 | 0000 00 | 0 | 0 | Damage, Ammo, Reload, GPS - request
+            {
+
+
+
+                int hexData = Convert.ToInt32(data, 16);
+
+                Debug.Log($"Data: {hexData:X}");
+
+                if ((hexData & 0xFF00) != 0) // Damage
+                {
+                    if (player.Health - (byte)(hexData >> 8) >= 0)
+                    {
+                        MainThreadDispatcher.Execute(() => player.Health -= (byte)(hexData >> 8));
+                    }
+                    else
+                    {
+                        MainThreadDispatcher.Execute(() => player.Health = 0);
+                    }
+                }
+
+                if ((hexData & 0x00FC) != 0) // Ammo
+                {
+                    if (player.Ammo - (byte)((hexData & 0x00FC) >> 2) >= 0)
+                    {
+                        MainThreadDispatcher.Execute(() => player.Ammo -= (byte)((hexData & 0x00FC) >> 2));
+                    }
+                    else throw new Exception("To less Ammo");
+                }
+
+                if ((hexData & 0x0002) != 0) // Reload
+                {
+
+                    if (player.MaxAmmo - (Settings.weaponInfo[player.WeaponType].AmmoPerMag - player.Ammo) >= 0)
+                    {
+                        MainThreadDispatcher.Execute(() =>
+                        {
+                            player.MaxAmmo -= (Settings.weaponInfo[player.WeaponType].AmmoPerMag - player.Ammo);
+                            player.Ammo = Settings.weaponInfo[player.WeaponType].AmmoPerMag;
+                        });
+                    }
+                    else
+                    {
+                        if (player.MaxAmmo != 0)
+                        {
+                            MainThreadDispatcher.Execute(() =>
+                            {
+                                player.Ammo += (byte)player.MaxAmmo;
+                                player.MaxAmmo = 0;
+                            });
+                        }
+                        else throw new Exception("You need to refill your Ammo");
+                    }
+                }
+
+                gpsRequest = (hexData & 0x0001) != 0; // GPS-request
+                // Use MainThreadDispatcher to call WriteData on the main thread
+                MainThreadDispatcher.Execute(() => threadBluetooth.WriteData(createResponseData(gpsRequest) + "\n"));
             }
 
         }
         catch (Exception e)
         {
-            Debug.LogError(e.StackTrace);
+            Debug.LogException(e);
         }
+    }
 
-        // Use MainThreadDispatcher to call WriteData on the main thread
-        MainThreadDispatcher.Execute(() => threadBluetooth.WriteData("Received Data: " + data + "\n"));
+    string createResponseData(bool gpsRequest)
+    {
+        if (player.Health == 0)
+            return "FFF";
+
+        ulong responseData = (ulong)(player.AbilityActivated ? 1 : 0);
+        responseData += (ulong)(player.Ammo << 1);
+
+        if (gpsRequest)
+            responseData += player.GPSData.SerialData << 8;
+
+        return responseData.ToString("X");
     }
 
     public void SendBaseInformations()
@@ -315,6 +384,6 @@ public class BluetoothManager : MonoBehaviour
         data += (((byte)player.WeaponType) << 10);
         data += (((byte)player.TeamInfo) << 12);
 
-        WriteData(data.ToString("X"));
+        WriteData(data.ToString("X") + "\n");
     }
 }

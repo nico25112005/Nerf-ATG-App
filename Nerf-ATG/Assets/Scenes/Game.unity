@@ -807,6 +807,7 @@ MonoBehaviour:
   - {fileID: 3409876656704266787, guid: 15215c763ea258d4fa558af1efc54347, type: 3}
   - {fileID: 9156334756064084915, guid: 1837ae056dc73d04abf51e2df4c88798, type: 3}
   - {fileID: 9156334756064084915, guid: ef0f51a106c7f154094f618e94584e07, type: 3}
+  - {fileID: 954172782}
 --- !u!4 &234110356
 Transform:
   m_ObjectHideFlags: 0
@@ -1641,7 +1642,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 954172785}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 234110355}
+        m_TargetAssemblyTypeName: Assets.Scripts.UIManager, Assembly-CSharp
+        m_MethodName: aktivateAbility
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &954172785
 MonoBehaviour:
   m_ObjectHideFlags: 0

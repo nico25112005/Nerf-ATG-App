@@ -3,12 +3,14 @@ using Game.Enums;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
+//using System.Threading;
 using UnityEngine;
 using UnityEngine.Android;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Timers;
+
 
 namespace Assets.Scripts
 {
@@ -79,7 +81,6 @@ namespace Assets.Scripts
 
         public void OnNewDevice(object sender, string deviceName)
         {
-            Debug.Log("EventTest: " + deviceName);
             GameObject prefabInstance = Instantiate(uiObjects[2], uiObjects[3].transform);
             prefabInstance.transform.Find("DeviceName").GetComponent<Text>().text = deviceName;
             prefabInstance.GetComponent<Button>().onClick.AddListener(() => ButtonClick(prefabInstance.GetComponentInChildren<Text>()));
@@ -99,11 +100,11 @@ namespace Assets.Scripts
 
         void OnEnemyLocationChange(object sender, GPSData e)
         {
-            PlaceMarkerOnTile(uiObjects[12], e.Latitude, e.Longitude);
+            MainThreadDispatcher.Execute(() => PlaceMarkerOnTile(uiObjects[12], e.Latitude, e.Longitude));
         }
         void OnTeamMateLocationChange(object sender, GPSData e)
         {
-            PlaceMarkerOnTile(uiObjects[13], e.Latitude, e.Longitude);
+            MainThreadDispatcher.Execute(() => PlaceMarkerOnTile(uiObjects[13], e.Latitude, e.Longitude));
         }
 
         // ----Initialization ---- //
@@ -206,7 +207,21 @@ namespace Assets.Scripts
             uiObjects[7].SetActive(false);
             PlaceMarkerOnTile(uiObjects[9], player.BaseLocation.Latitude, player.BaseLocation.Longitude);
         }
-
+        
+        public void aktivateAbility()
+        {
+            Timer colldownTimer = new Timer(120000);
+            colldownTimer.Elapsed += (sender, e) =>
+            {
+                MainThreadDispatcher.Execute(() => uiObjects[14].GetComponent<Button>().interactable = true);
+                colldownTimer.Stop();
+                colldownTimer.Dispose();
+            };
+            colldownTimer.AutoReset = false;
+            colldownTimer.Start();
+            uiObjects[14].GetComponent<Button>().interactable = false;
+            player.AbilityActivated = true;
+        }
         
         //----- GPS Location ----- //
         IEnumerator InitGPS()
@@ -266,7 +281,7 @@ namespace Assets.Scripts
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError(e.StackTrace);
+                    Debug.LogException(e);
                 }
             }
             else
@@ -351,7 +366,9 @@ namespace Assets.Scripts
                 //Spawn base marker
                 if(player.BaseLocation != null)
                     PlaceMarkerOnTile(uiObjects[9], player.BaseLocation.Latitude, player.BaseLocation.Longitude);
-                if(player.EnemyLocations != null)
+
+                /*/Spawn enemy and team mate markers
+                if(player.EnemyLocations.Count != 0)
                 {
                     foreach(GPSData gps in player.EnemyLocations)
                     {
@@ -359,13 +376,14 @@ namespace Assets.Scripts
                     }
                 }
 
-                if (player.TeamMateLocations != null)
+                if (player.TeamMateLocations.Count != 0)
                 {
                     foreach (GPSData gps in player.TeamMateLocations)
                     {
                         PlaceMarkerOnTile(uiObjects[13], gps.Latitude, gps.Longitude);
                     }
                 }
+                */
             }
 
             uiObjects[8].GetComponent<RectTransform>().localPosition = -GPSToTilePosition(latitude, longitude);

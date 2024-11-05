@@ -21,7 +21,7 @@ public class GPSData
             }
             catch (Exception e)
             {
-                Debug.LogError(e.StackTrace);
+                Debug.LogException(e);
             }
         }
     }
@@ -56,8 +56,16 @@ public class GPSData
         {
             lock (_lock)
             {
-                serialData = value;
-                _ = DecodeSerialDataAsync(serialData); // Asynchrone Dekodierung aufrufen
+                try
+                {
+                    serialData = value;
+                    Debug.LogWarning(serialData.ToString("X"));
+                    _ = DecodeSerialDataAsync(serialData); // Asynchrone Dekodierung aufrufen
+                }
+                catch(Exception e)
+                {
+                    Debug.LogException(e);
+                }
             }
         }
     }
@@ -102,6 +110,7 @@ public class GPSData
         {
             latitude = newLatitude;
             longitude = newLongitude;
+            Debug.LogWarning("decodeAsync: " + longitude+ ", " + latitude);
         }
     }
 
@@ -109,7 +118,7 @@ public class GPSData
     {
         // Extrahiere Latitude-Teile
         ulong latCode = hexCode & 0x3FFFFFF;
-        short latDegrees = (short)((latCode >> 17) & 0x7F);
+        short latDegrees = (short)((latCode >> 17) & 0x1FF);
         byte latMinutes = (byte)((latCode >> 11) & 0x3F);
         byte latSeconds = (byte)((latCode >> 5) & 0x3F);
         byte latMilliseconds = (byte)(latCode & 0x1F);
@@ -121,8 +130,8 @@ public class GPSData
         latitude += (double)latMilliseconds / (3600.0 * 32.0);
 
         // Extrahiere Longitude-Teile
-        ulong lonCode = (hexCode >> 26) & 0x3FFFFFF;
-        short lonDegrees = (short)((lonCode >> 17) & 0xFF);
+        ulong lonCode = (hexCode >> 26);
+        short lonDegrees = (short)((lonCode >> 17) & 0x1FF);
         byte lonMinutes = (byte)((lonCode >> 11) & 0x3F);
         byte lonSeconds = (byte)((lonCode >> 5) & 0x3F);
         byte lonMilliseconds = (byte)(lonCode & 0x1F);
@@ -133,6 +142,7 @@ public class GPSData
         longitude += (double)lonSeconds / 3600.0;
         longitude += (double)lonMilliseconds / (3600.0 * 32.0);
 
+        Debug.LogWarning("decode: " + longitude + ", " + latitude);
         return (latitude, longitude);
     }
 }
