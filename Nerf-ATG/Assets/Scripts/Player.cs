@@ -3,25 +3,12 @@ using Game.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-//using System.Threading;
 using UnityEngine;
 using System.Timers;
+using System.Net.NetworkInformation;
 
 public class Player
 {
-    private static Player instance;
-    private static readonly object _lock = new();
-
-    //private Dictionary<UpgradeType, byte> upgrades;
-    private Team teamInfo;
-    private byte health;
-    private byte coins;
-    private WeaponType weaponType;
-    private byte ammo;
-    private int maxAmmo;
-
-
-
     public event EventHandler<EventArgs> TeamInfoChanged;
     public event EventHandler<EventArgs> HealthChanged;
     public event EventHandler<EventArgs> CoinsChanged;
@@ -32,6 +19,18 @@ public class Player
     public event EventHandler<EventArgs> GpsDataChanged;
     public event EventHandler<GPSData> EnemyLocationChanged;
     public event EventHandler<GPSData> TeamMateLocationChanged;
+
+
+    private static Player instance;
+    private static readonly object _lock = new();
+
+    private Team teamInfo;
+    private byte health;
+    private byte coins;
+    private WeaponType weaponType;
+    private byte ammo;
+    private int maxAmmo;
+
 
     private Player()
     {
@@ -49,11 +48,10 @@ public class Player
         };
 
         Coins = 25;
-        Health = 10;
+        Health = 100;
         TeamInfo = Team.Violet;
         WeaponType = WeaponType.None;
     }
-
 
     public static Player GetInstance()
     {
@@ -78,7 +76,13 @@ public class Player
     }
 
     public GPSData BaseLocation { get; set; }
+
     public Dictionary<UpgradeType, byte> Upgrades { get; private set; }
+
+    public string MacAdress
+    {
+        get { return GetMacAdress(); }
+    }
 
     public byte Health
     {
@@ -150,8 +154,8 @@ public class Player
     public GPSData GPSData { get; set; }
 
     public List<GPSData> EnemyLocations { get; set; } = new List<GPSData>();
-    public List<GPSData> TeamMateLocations { get; set; } = new List<GPSData>();
 
+    public List<GPSData> TeamMateLocations { get; set; } = new List<GPSData>();
 
     public void SetEnemyLocation(string locationHexCode)
     {
@@ -208,7 +212,7 @@ public class Player
         }
     }
 
-    public void BaseRefill(object state, ElapsedEventArgs e)
+    private void BaseRefill(object state, ElapsedEventArgs e)
     {
         Debug.LogWarning("Base refilling");
         if (Health + Settings.Healing <= Settings.Health)
@@ -255,9 +259,49 @@ public class Player
     public void SetUpgrades(UpgradeType type, byte value)
     {
         Upgrades[type] = value;
-        health = (byte)(Settings.Health + Upgrades[UpgradeType.Health] * 15);
+        switch (type)
+        {
+            case UpgradeType.Health:
+                Settings.Health += (byte)(Upgrades[UpgradeType.Health] * 15);
+                health = Settings.Health;
+                break;
+
+            case UpgradeType.Healing:
+                Settings.Healing += (byte)(Upgrades[UpgradeType.Healing] * 2);
+                break;
+
+        }
+
         UpgradesChanged?.Invoke(this, EventArgs.Empty);
     }
+
+    private string GetMacAdress()
+    {
+        try
+        {
+            foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (nic.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ||
+                    nic.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                {
+                    byte[] macBytes = nic.GetPhysicalAddress().GetAddressBytes();
+
+                    if (macBytes.Length > 0)
+                    {
+                        // Keine Trennzeichen, einfach zusammenfügen
+                        return string.Concat(macBytes.Select(b => b.ToString("X2")));
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fehler: {ex.Message}");
+        }
+
+        return "MAC-Adresse nicht verfügbar";
+    }
+
     public override string ToString()
     {
         string result = "Player Info:\n";

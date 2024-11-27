@@ -28,8 +28,7 @@ public class SceneManagerSkript : MonoBehaviour
                 break;
 
             case 2:
-                Settings.Health = player.Health;
-                Settings.Healing += (byte)(player.Upgrades[UpgradeType.Healing] * 2);
+
                 break;
 
             default:

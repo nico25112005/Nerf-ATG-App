@@ -4,7 +4,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.Android;
 
-public class GPS : MonoBehaviour
+public class GPS
 {
     public static double CalculateDistance(GPSData gps1, GPSData gps2)
     {
@@ -23,7 +23,7 @@ public class GPS : MonoBehaviour
         if (location1 == null || location2 == null)
             return false;
 
-        double distance = GPS.CalculateDistance(location1, location2);
+        double distance = CalculateDistance(location1, location2);
         Debug.Log("Distance: " + distance);
         return distance <= radius; // Überprüfung, ob die Distanz kleiner oder gleich 8 Metern ist
     }
