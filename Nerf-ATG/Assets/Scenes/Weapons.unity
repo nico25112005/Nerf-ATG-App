@@ -430,10 +430,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ec2b366be2bf944cba673e6e990ea70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiObjects:
-  - {fileID: 117503962}
-  - {fileID: 1503052250}
-  - {fileID: 1173410780}
+  uiElements:
+  - key: TeamInfo
+    element: {fileID: 117503962}
+  - key: WeaponIcon
+    element: {fileID: 1503052250}
+  - key: Coins
+    element: {fileID: 1173410780}
+  uiObjects: []
 --- !u!4 &234110356
 Transform:
   m_ObjectHideFlags: 0

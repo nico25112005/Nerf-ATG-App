@@ -16,72 +16,144 @@ namespace Assets.Scripts
 {
     public class UIManager : MonoBehaviour
     {
-        [SerializeField] List<GameObject> uiObjects;
+
+        [System.Serializable]
+        public class UIElementEntry
+        {
+            public string key; // Der Name des Elements
+            public GameObject element; // Das zugehörige UI-Objekt
+        }
+
+        [SerializeField]
+        private List<UIElementEntry> uiElements = new List<UIElementEntry>();
+
+        private Dictionary<string, GameObject> uiDic;
+
+        private void InitializeUIElements()
+        {
+            uiDic = new Dictionary<string, GameObject>();
+
+            foreach (var entry in uiElements)
+            {
+                if (!uiDic.ContainsKey(entry.key))
+                {
+                    uiDic.Add(entry.key, entry.element);
+                }
+                else
+                {
+                    Debug.LogWarning($"Duplicate key detected: {entry.key}");
+                }
+            }
+        }
+
+        // UI-Element abrufen
+        public GameObject GetUIElement(string key)
+        {
+            if (uiDic.ContainsKey(key))
+            {
+                return uiDic[key];
+            }
+            Debug.LogWarning($"UI Element with key {key} not found.");
+            return null;
+        }
+
+
+        private void AssignEvents()
+        {
+            player.WeaponTypeChanged += OnWeaponSelect;
+            player.CoinsChanged += OnCoinsChange;
+            player.UpgradesChanged += OnUpgradeChange;
+            player.HealthChanged += OnHealthChange;
+            player.AmmoChanged += OnAmmoChange;
+            player.MaxAmmoChanged += OnMaxAmmoChange;
+            player.GpsDataChanged += OnGPSDataChange;
+            player.EnemyLocationChanged += OnEnemyLocationChange;
+            player.TeamMateLocationChanged += OnTeamMateLocationChange;
+        }
+
+        private void UnsignEvents()
+        {
+            player.WeaponTypeChanged -= OnWeaponSelect;
+            player.CoinsChanged -= OnCoinsChange;
+            player.UpgradesChanged -= OnUpgradeChange;
+            player.HealthChanged -= OnHealthChange;
+            player.AmmoChanged -= OnAmmoChange;
+            player.MaxAmmoChanged -= OnMaxAmmoChange;
+            player.GpsDataChanged -= OnGPSDataChange;
+            player.EnemyLocationChanged -= OnEnemyLocationChange;
+            player.TeamMateLocationChanged -= OnTeamMateLocationChange;
+        }
+
+        //---------------------------------------------------------------------------------------------------------------------------------------------//
+        //---------------------------------------------------------------------------------------------------------------------------------------------//
+        //---------------------------------------------------------------------------------------------------------------------------------------------//
+
         private Player player;
-        private BluetoothManager bluetooth;
         private string connectingDevice;
+        private TCPClient tcp;
 
         // ---- Events ---- //
         void OnHealthChange(object sender, EventArgs e)
         {
-            uiObjects[4].transform.Find("TextBackground").Find("Text").GetComponent<Text>().text = "Health: " + player.Health.ToString();
-            uiObjects[4].transform.Find("Progressbar").GetComponent<RectTransform>().sizeDelta =
-               new Vector2((uiObjects[4].GetComponent<RectTransform>().rect.width - 20) / Settings.Health * player.Health,
-               uiObjects[4].transform.Find("Progressbar").GetComponent<RectTransform>().rect.height);
+            GetUIElement("HealthBar").transform.Find("TextBackground").Find("Text").GetComponent<Text>().text = "Health: " + player.Health.ToString();
+            GetUIElement("HealthBar").transform.Find("Progressbar").GetComponent<RectTransform>().sizeDelta =
+               new Vector2((GetUIElement("HealthBar").GetComponent<RectTransform>().rect.width - 20) / Settings.Health * player.Health,
+               GetUIElement("HealthBar").transform.Find("Progressbar").GetComponent<RectTransform>().rect.height);
         }
 
         void OnAmmoChange(object sender, EventArgs e)
         {
-            uiObjects[5].transform.Find("TextBackground").Find("Text").GetComponent<Text>().text = "Ammo: " + player.Ammo.ToString();
-            uiObjects[5].transform.Find("Progressbar").GetComponent<RectTransform>().sizeDelta =
-               new Vector2((uiObjects[5].GetComponent<RectTransform>().rect.width - 20) / Settings.weaponInfo[player.WeaponType].AmmoPerMag * player.Ammo,
-               uiObjects[5].transform.Find("Progressbar").GetComponent<RectTransform>().rect.height);
+            GetUIElement("AmmoBar").transform.Find("TextBackground").Find("Text").GetComponent<Text>().text = "Ammo: " + player.Ammo.ToString();
+            GetUIElement("AmmoBar").transform.Find("Progressbar").GetComponent<RectTransform>().sizeDelta =
+               new Vector2((GetUIElement("AmmoBar").GetComponent<RectTransform>().rect.width - 20) / Settings.weaponInfo[player.WeaponType].AmmoPerMag * player.Ammo,
+               GetUIElement("AmmoBar").transform.Find("Progressbar").GetComponent<RectTransform>().rect.height);
         }
 
         void OnMaxAmmoChange(object sender, EventArgs e)
         {
-            uiObjects[6].transform.Find("TextBackground").Find("Text").GetComponent<Text>().text = "Left Ammo: " + player.MaxAmmo.ToString();
-            uiObjects[6].transform.Find("Progressbar").GetComponent<RectTransform>().sizeDelta =
-               new Vector2((uiObjects[6].GetComponent<RectTransform>().rect.width - 20) / Settings.weaponInfo[player.WeaponType].MaxAmmo * player.MaxAmmo,
-               uiObjects[6].transform.Find("Progressbar").GetComponent<RectTransform>().rect.height);
+            GetUIElement("MaxAmmoBar").transform.Find("TextBackground").Find("Text").GetComponent<Text>().text = "Left Ammo: " + player.MaxAmmo.ToString();
+            GetUIElement("MaxAmmoBar").transform.Find("Progressbar").GetComponent<RectTransform>().sizeDelta =
+               new Vector2((GetUIElement("MaxAmmoBar").GetComponent<RectTransform>().rect.width - 20) / Settings.weaponInfo[player.WeaponType].MaxAmmo * player.MaxAmmo,
+               GetUIElement("MaxAmmoBar").transform.Find("Progressbar").GetComponent<RectTransform>().rect.height);
         }
 
         void OnWeaponSelect(object sender, EventArgs e)
         {
-            uiObjects[1].GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
+            GetUIElement("WeaponIcon").GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
         }
 
         void OnCoinsChange(object sender, EventArgs e)
         {
-            uiObjects[2].GetComponent<Text>().text = player.Coins.ToString() + " C";
+            GetUIElement("Coins").GetComponent<Text>().text = player.Coins.ToString() + " C";
         }
 
         void OnConnectionChange(object sender, bool isConnected)
         {
             if (isConnected)
             {
-                uiObjects[0].GetComponent<Button>().interactable = true;
-                uiObjects[1].GetComponent<Text>().color = Color.white;
+                GetUIElement("ConnectToServer").GetComponent<Button>().interactable = true;
+                GetUIElement("StartButtonText").GetComponent<Text>().color = Color.white;
+                tcp.SendMessage(new BlasterConnected(player.BlasterMacAdress));
             }
             else
             {
-                uiObjects[0].GetComponent<Button>().interactable = false;
-                uiObjects[1].GetComponent<Text>().color = Color.gray;
+                GetUIElement("ConnectToServer").GetComponent<Button>().interactable = false;
+                GetUIElement("StartButtonText").GetComponent<Text>().color = Color.gray;
             }
         }
 
         void OnUpgradeChange(object sender, EventArgs e)
         {
-            string result = string.Format("Health: {0}\n", player.Health);
-            result += string.Format("{0}: {1} hp/s\n", UpgradeType.Healing, player.Upgrades[UpgradeType.Healing] * 2 + Settings.Healing);
+            string result = string.Format("Health: {0}\n", Settings.Health + (byte)(player.Upgrades[UpgradeType.Health] * 15));
+            result += string.Format("{0}: {1} hp/s\n", UpgradeType.Healing, Settings.Healing + (byte)(player.Upgrades[UpgradeType.Healing] * 2));
             result += string.Format("{0}: {1} m\n", UpgradeType.GpsShift, player.Upgrades[UpgradeType.GpsShift] * 5);
             result += string.Format("Sound: {0} %", 100 - player.Upgrades[UpgradeType.Damping] * 50);
-            uiObjects[3].GetComponent<Text>().text = result;
+            GetUIElement("Stats").GetComponent<Text>().text = result;
         }
 
         public void OnNewDevice(object sender, string deviceName)
         {
-            GameObject prefabInstance = Instantiate(uiObjects[2], uiObjects[3].transform);
+            GameObject prefabInstance = Instantiate(GetUIElement("DevicePrefab"), GetUIElement("DeviceList").transform);
             prefabInstance.transform.Find("DeviceName").GetComponent<Text>().text = deviceName;
             prefabInstance.GetComponent<Button>().onClick.AddListener(() => ButtonClick(prefabInstance.GetComponentInChildren<Text>()));
             deviceName = null;
@@ -89,7 +161,7 @@ namespace Assets.Scripts
             void ButtonClick(Text text)
             {
                 connectingDevice = text.text;
-                uiObjects[4].GetComponent<Text>().text = connectingDevice;
+                GetUIElement("ConnectionDevice").GetComponent<Text>().text = connectingDevice;
             }
         }
 
@@ -100,112 +172,88 @@ namespace Assets.Scripts
 
         void OnEnemyLocationChange(object sender, GPSData e)
         {
-            MainThreadDispatcher.Execute(() => PlaceMarkerOnTile(uiObjects[12], e.Latitude, e.Longitude));
+            MainThreadDispatcher.Execute(() => PlaceMarkerOnTile(GetUIElement("EnemyPin"), e.Latitude, e.Longitude));
         }
+
         void OnTeamMateLocationChange(object sender, GPSData e)
         {
-            MainThreadDispatcher.Execute(() => PlaceMarkerOnTile(uiObjects[13], e.Latitude, e.Longitude));
+            MainThreadDispatcher.Execute(() => PlaceMarkerOnTile(GetUIElement("TeamMatePin"), e.Latitude, e.Longitude));
         }
 
         // ----Initialization ---- //
         void Start()
         {
+            tcp = TCPClient.GetInstance();
+            InitializeUIElements();
+
             player = Player.GetInstance();
-            bluetooth = BluetoothManager.GetInstance();
 
-            player.WeaponTypeChanged += OnWeaponSelect;
-            player.CoinsChanged += OnCoinsChange;
-            player.UpgradesChanged += OnUpgradeChange;
-            player.HealthChanged += OnHealthChange;
-            player.AmmoChanged += OnAmmoChange;
-            player.MaxAmmoChanged += OnMaxAmmoChange;
-            player.GpsDataChanged += OnGPSDataChange;
-            player.EnemyLocationChanged += OnEnemyLocationChange;
-            player.TeamMateLocationChanged += OnTeamMateLocationChange;
-
-            bluetooth.NewDevice += OnNewDevice;
-            bluetooth.ConnectionChanged += OnConnectionChange;
+            AssignEvents();
 
             SceneDepandantManagerStart();
         }
         private void OnDestroy()
         {
             StopCoroutine(InitGPS());
+            UnsignEvents();
 
-            player.WeaponTypeChanged -= OnWeaponSelect;
-            player.CoinsChanged -= OnCoinsChange;
-            player.UpgradesChanged -= OnUpgradeChange;
-            player.HealthChanged -= OnHealthChange;
-            player.AmmoChanged -= OnAmmoChange;
-            player.MaxAmmoChanged -= OnMaxAmmoChange;
-            player.GpsDataChanged -= OnGPSDataChange;
-            player.EnemyLocationChanged -= OnEnemyLocationChange;
-            player.TeamMateLocationChanged -= OnTeamMateLocationChange;
-
-            bluetooth.NewDevice -= OnNewDevice;
-            bluetooth.ConnectionChanged -= OnConnectionChange;
         }
         void SceneDepandantManagerStart()
         {
-            switch (SceneManager.GetActiveScene().buildIndex)
+            switch (SceneManager.GetActiveScene().name)
             {
-                case 0:
+                case "Menu":
                     //bluetooth.StartScanDevices();
                     break;
 
-                case 1:
-                    uiObjects[1].GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
+                case "Weapons":
+                    GetUIElement("WeaponIcon").GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
                     break;
-                case 2:
-                    uiObjects[2].GetComponent<Text>().text = player.Coins.ToString() + " C";
-                    uiObjects[1].GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
-                    uiObjects[0].GetComponent<Text>().text = player.TeamInfo.ToString();
+                case "Upgrades":
+                    GetUIElement("Coins").GetComponent<Text>().text = player.Coins.ToString() + " C";
+                    GetUIElement("WeaponIcon").GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
+                    GetUIElement("TeamInfo").GetComponent<Text>().text = player.TeamInfo.ToString();
                     OnUpgradeChange(new object(), EventArgs.Empty);
                     break;
-                case 3:
+                case "Game":
 
                     player.MaxAmmo = Settings.weaponInfo[player.WeaponType].MaxAmmo;
                     player.Ammo = Settings.weaponInfo[player.WeaponType].AmmoPerMag;
 
-                    uiObjects[1].GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
-                    uiObjects[0].GetComponent<Text>().text = player.TeamInfo.ToString();
+                    GetUIElement("WeaponIcon").GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
+                    GetUIElement("TeamInfo").GetComponent<Text>().text = player.TeamInfo.ToString();
 
                     OnUpgradeChange(new object(), EventArgs.Empty);
                     OnHealthChange(new object(), EventArgs.Empty);
 
                     StartCoroutine(InitGPS());
-                    bluetooth.SendBaseInformations();
 
                     break;
             }
         }
 
         // Buttons //
+
         public void Connect()
         {
-            Debug.Log(connectingDevice);
-            if (uiObjects[4].GetComponent<Text>().text != "")
-            {
-                if (BluetoothManager.devices.ContainsKey(connectingDevice))
-                    bluetooth.StartConnection(BluetoothManager.devices[connectingDevice]);
-            }
+            
         }
+
         public void Scan()
         {
-            foreach (Transform child in uiObjects[3].transform)
+            foreach (Transform child in GetUIElement("DeviceList").transform)
             {
                 Destroy(child.gameObject);
             }
-            uiObjects[4].GetComponent<Text>().text = "";
-            connectingDevice = null;
-            bluetooth.StartScanDevices();
+            GetUIElement("ConnectionDevice").GetComponent<Text>().text = "";
+            
         }
 
         public void SetBaseLocation()
         {
             player.BaseLocation = player.GPSData;
-            uiObjects[7].SetActive(false);
-            PlaceMarkerOnTile(uiObjects[9], player.BaseLocation.Latitude, player.BaseLocation.Longitude);
+            GetUIElement("HomeLocation").SetActive(false);
+            PlaceMarkerOnTile(GetUIElement("HomePin"), player.BaseLocation.Latitude, player.BaseLocation.Longitude);
         }
         
         public void aktivateAbility()
@@ -213,26 +261,26 @@ namespace Assets.Scripts
             Timer colldownTimer = new Timer(120000);
             colldownTimer.Elapsed += (sender, e) =>
             {
-                MainThreadDispatcher.Execute(() => uiObjects[14].GetComponent<Button>().interactable = true);
+                MainThreadDispatcher.Execute(() => GetUIElement("AbilityBackground").GetComponent<Button>().interactable = true);
                 colldownTimer.Stop();
                 colldownTimer.Dispose();
             };
             colldownTimer.AutoReset = false;
             colldownTimer.Start();
-            uiObjects[14].GetComponent<Button>().interactable = false;
+            GetUIElement("AbilityBackground").GetComponent<Button>().interactable = false;
             player.AbilityActivated = true;
         }
         
         //----- GPS Location ----- //
         IEnumerator InitGPS()
         {
-#if UNITY_ANDROID
+            #if UNITY_ANDROID
             if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
             {
                 Permission.RequestUserPermission(Permission.FineLocation);
                 yield return new WaitForSeconds(1); // Geben Sie dem Benutzer Zeit, auf das Dialogfeld zu reagieren
             }
-#endif
+            #endif
 
             if (!Input.location.isEnabledByUser)
             {
@@ -252,21 +300,21 @@ namespace Assets.Scripts
             // Service didn't initialize in 20 seconds
             if (maxWait < 1)
             {
-                bluetooth.Toast("Didn't initialize GPS");
+                // Todo: info needed
                 yield break;
             }
 
             // Connection has failed
             if (Input.location.status == LocationServiceStatus.Failed)
             {
-                bluetooth.Toast("Unable to determine device location");
+                // Todo: info needed
                 yield break;
             }
             else
             {
-                uiObjects[10].SetActive(true);
+                GetUIElement("SetBaseButton").SetActive(true);
                 //Acces granted
-                bluetooth.Toast("GPS initialized");
+                // Todo: info needed
                 InvokeRepeating("UpdateGPS", 0f, 0.25f);
             }
         }
@@ -302,16 +350,16 @@ namespace Assets.Scripts
             
             double latitude = player.GPSData.Latitude;
             double longitude = player.GPSData.Longitude;
-            if (uiObjects[8].transform.childCount == 1) //Marker container exists already
+            if (GetUIElement("Map").transform.childCount == 1) //Marker container exists already
             {
-                float tileSize = uiObjects[8].GetComponent<RectTransform>().rect.width;
+                float tileSize = GetUIElement("Map").GetComponent<RectTransform>().rect.width;
                 for (short x = -1; x <= 1; x++)
                 {
                     for (short y = -1; y <= 1; y++)
                     {
                         if (y != 0 || x != 0)
                         {
-                            maptiles[x + 1, y + 1] = Instantiate(uiObjects[11], uiObjects[8].transform);
+                            maptiles[x + 1, y + 1] = Instantiate(GetUIElement("TilePrefab"), GetUIElement("Map").transform);
                             maptiles[x + 1, y + 1].transform.localPosition = new Vector3(x * tileSize, -y * tileSize, 0);
                             maptiles[x + 1, y + 1].transform.SetAsFirstSibling();
                         }
@@ -347,7 +395,7 @@ namespace Assets.Scripts
                             // Aktualisiere das UI-Element mit dem neuen Tile
                             if (y == 0 && x == 0)
                             {
-                                uiObjects[8].GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
+                                GetUIElement("Map").GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
                             }
                             else
                             {
@@ -358,14 +406,14 @@ namespace Assets.Scripts
                     }
                 }
 
-                foreach(Transform marker in uiObjects[8].transform.Find("Markers").transform)
+                foreach(Transform marker in GetUIElement("Map").transform.Find("Markers").transform)
                 {
                     Destroy(marker.gameObject);
                 }
 
                 //Spawn base marker
                 if(player.BaseLocation != null)
-                    PlaceMarkerOnTile(uiObjects[9], player.BaseLocation.Latitude, player.BaseLocation.Longitude);
+                    PlaceMarkerOnTile(GetUIElement("HomePin"), player.BaseLocation.Latitude, player.BaseLocation.Longitude);
 
                 /*/Spawn enemy and team mate markers
                 if(player.EnemyLocations.Count != 0)
@@ -386,7 +434,7 @@ namespace Assets.Scripts
                 */
             }
 
-            uiObjects[8].GetComponent<RectTransform>().localPosition = -GPSToTilePosition(latitude, longitude);
+            GetUIElement("Map").GetComponent<RectTransform>().localPosition = -GPSToTilePosition(latitude, longitude);
         }
 
 
@@ -394,7 +442,7 @@ namespace Assets.Scripts
         {
             Vector2 tilePosition = GPSToTilePosition(latitude, longitude);
             GameObject marker = Instantiate(prefab, new Vector3(tilePosition.x, tilePosition.y, 0), Quaternion.identity);
-            marker.transform.SetParent(uiObjects[8].transform.Find("Markers").transform, false);
+            marker.transform.SetParent(GetUIElement("Map").transform.Find("Markers").transform, false);
         }
 
         Vector2Int GPSToTile(double latitude, double longitude, int zoom)
@@ -411,8 +459,8 @@ namespace Assets.Scripts
         {
             float latRad = (float)(latitude * Mathf.Deg2Rad);
             int n = 1 << zoom;
-            float x = (float)(((longitude + 180.0) / 360.0 * n - (currentTileCoords.x + 0.5)) * uiObjects[8].GetComponent<RectTransform>().rect.width);
-            float y = (float)(((1.0 - Mathf.Log((float)(Mathf.Tan(latRad) + 1.0 / Mathf.Cos(latRad))) / Mathf.PI) / 2.0 * n - (currentTileCoords.y + 0.5)) * uiObjects[8].GetComponent<RectTransform>().rect.height * -1);
+            float x = (float)(((longitude + 180.0) / 360.0 * n - (currentTileCoords.x + 0.5)) * GetUIElement("Map").GetComponent<RectTransform>().rect.width);
+            float y = (float)(((1.0 - Mathf.Log((float)(Mathf.Tan(latRad) + 1.0 / Mathf.Cos(latRad))) / Mathf.PI) / 2.0 * n - (currentTileCoords.y + 0.5)) * GetUIElement("Map").GetComponent<RectTransform>().rect.height * -1);
 
             return new Vector2(x, y);
         }

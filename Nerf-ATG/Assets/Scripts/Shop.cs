@@ -58,10 +58,10 @@ namespace Assets.Scripts
         {
             try
             {
-                switch (SceneManager.GetActiveScene().buildIndex)
+                switch (SceneManager.GetActiveScene().name)
                 {
-                    case 1: InitWeaponScene(); break;
-                    case 2: InitUpgradeScene(); break;
+                    case "Weapons": InitWeaponScene(); break;
+                    case "Upgrades": InitUpgradeScene(); break;
 
                     default:
                         break;
@@ -77,6 +77,7 @@ namespace Assets.Scripts
         public void ResetUpgrades()
         {
             player.Coins = (byte)(25 - Settings.weaponInfo[player.WeaponType].Price);
+            
             player.SetUpgrades(UpgradeType.Healing, 0);
             player.SetUpgrades(UpgradeType.Health, 0);
             player.SetUpgrades(UpgradeType.GpsShift, 0);

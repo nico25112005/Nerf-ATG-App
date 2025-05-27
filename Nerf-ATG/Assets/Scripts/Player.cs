@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEngine;
 using System.Timers;
 using System.Net.NetworkInformation;
+using System.Net.Mail;
 
 public class Player
 {
@@ -32,12 +33,13 @@ public class Player
     private int maxAmmo;
 
 
+
     private Player()
     {
         ResetInstance();
     }
 
-    public void ResetInstance()
+    private void ResetInstance()
     {
         Upgrades = new Dictionary<UpgradeType, byte>
         {
@@ -51,6 +53,11 @@ public class Player
         Health = 100;
         TeamInfo = Team.Violet;
         WeaponType = WeaponType.None;
+    }
+
+    public void DestroyInstance()
+    {
+        instance = null;
     }
 
     public static Player GetInstance()
@@ -79,10 +86,9 @@ public class Player
 
     public Dictionary<UpgradeType, byte> Upgrades { get; private set; }
 
-    public string MacAdress
-    {
-        get { return GetMacAdress(); }
-    }
+    public string PlayerName { get; set; }
+
+    public string BlasterMacAdress { get; set; }
 
     public byte Health
     {
@@ -259,48 +265,16 @@ public class Player
     public void SetUpgrades(UpgradeType type, byte value)
     {
         Upgrades[type] = value;
-        switch (type)
-        {
-            case UpgradeType.Health:
-                Settings.Health += (byte)(Upgrades[UpgradeType.Health] * 15);
-                health = Settings.Health;
-                break;
-
-            case UpgradeType.Healing:
-                Settings.Healing += (byte)(Upgrades[UpgradeType.Healing] * 2);
-                break;
-
-        }
 
         UpgradesChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private string GetMacAdress()
+    public void ApplyUpgrades()
     {
-        try
-        {
-            foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
-            {
-                if (nic.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ||
-                    nic.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
-                {
-                    byte[] macBytes = nic.GetPhysicalAddress().GetAddressBytes();
-
-                    if (macBytes.Length > 0)
-                    {
-                        // Keine Trennzeichen, einfach zusammenfügen
-                        return string.Concat(macBytes.Select(b => b.ToString("X2")));
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Fehler: {ex.Message}");
-        }
-
-        return "MAC-Adresse nicht verfügbar";
-    }
+        Settings.Health += (byte)(Upgrades[UpgradeType.Health] * 15);
+        health = Settings.Health;
+        Settings.Healing += (byte)(Upgrades[UpgradeType.Healing] * 2);
+    }      
 
     public override string ToString()
     {

@@ -792,6 +792,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ec2b366be2bf944cba673e6e990ea70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiElements:
+  - key: TeamInfo
+    element: {fileID: 117503962}
+  - key: WeaponIcon
+    element: {fileID: 225293764}
+  - key: AbilityIcon
+    element: {fileID: 2045226857}
+  - key: Stats
+    element: {fileID: 536733635}
+  - key: HealthBar
+    element: {fileID: 6114593037414108350}
+  - key: AmmoBar
+    element: {fileID: 163372236}
+  - key: MaxAmmoBar
+    element: {fileID: 795658813}
+  - key: HomeLocation
+    element: {fileID: 220155774}
+  - key: Map
+    element: {fileID: 6290140934481344125}
+  - key: HomePin
+    element: {fileID: 9156334756064084915, guid: e8f470dcedbcf4d4ea7ecffbc418e255, type: 3}
+  - key: SetBaseButton
+    element: {fileID: 39577593}
+  - key: TilePrefab
+    element: {fileID: 3409876656704266787, guid: 15215c763ea258d4fa558af1efc54347, type: 3}
+  - key: EnemyPin
+    element: {fileID: 9156334756064084915, guid: 1837ae056dc73d04abf51e2df4c88798, type: 3}
+  - key: TeamMatePin
+    element: {fileID: 9156334756064084915, guid: ef0f51a106c7f154094f618e94584e07, type: 3}
+  - key: AbilityBackground
+    element: {fileID: 954172782}
   uiObjects:
   - {fileID: 117503962}
   - {fileID: 225293764}
@@ -1840,7 +1871,7 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1.5
   m_Text: Please go to a place where you would like to set your base. You can then
-    heal yourself and replenish your ammunition within a radius of 8m around your
+    heal yourself and replenish your ammunition within a radius of 5m around your
     base.
 --- !u!222 &1083581321
 CanvasRenderer:

@@ -9,26 +9,31 @@ using UnityEngine.UI;
 public class SceneManagerSkript : MonoBehaviour
 {
      Player player;
-     BluetoothManager bluetooth;
     private void Start()
     {
         player = Player.GetInstance();
-        bluetooth = BluetoothManager.GetInstance();
     }
     public void LoadNextScene()
     {
-        switch (SceneManager.GetActiveScene().buildIndex)
+        switch (SceneManager.GetActiveScene().name)
         {
-            case 0:
-                player.TeamInfo = (Team)Enum.Parse(typeof(Team), transform.Find("Canvas").Find("Dropdown").GetComponent<Dropdown>().options[transform.Find("Canvas").Find("Dropdown").GetComponent<Dropdown>().value].text);
+            case "Menu":
+                //player.TeamInfo = (Team)Enum.Parse(typeof(Team), transform.Find("Canvas").Find("Dropdown").GetComponent<Dropdown>().options[transform.Find("Canvas").Find("Dropdown").GetComponent<Dropdown>().value].text);
+                
+                if (player.PlayerName == "")
+                    return;
+
+                player.PlayerName = transform.Find("Canvas").Find("InputName").GetComponent<InputField>().text;
+
+                Debug.LogWarning(player.BlasterMacAdress);
                 break;
 
-            case 1:
+            case "Weapons":
                 if (player.WeaponType == WeaponType.None) return;
                 break;
 
-            case 2:
-
+            case "Upgrades":
+                player.ApplyUpgrades();
                 break;
 
             default:
@@ -40,8 +45,7 @@ public class SceneManagerSkript : MonoBehaviour
 
     public void Quit()
     {
-        bluetooth.StopConnection();
-        player.ResetInstance();
+        player.DestroyInstance();
         SceneManager.LoadScene(0);
     }
 }
