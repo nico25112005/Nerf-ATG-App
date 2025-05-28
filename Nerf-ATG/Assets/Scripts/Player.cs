@@ -3,10 +3,8 @@ using Game.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using System.Timers;
-using System.Net.NetworkInformation;
-using System.Net.Mail;
+using UnityEngine;
 
 public class Player
 {
@@ -184,7 +182,7 @@ public class Player
     Timer baseRefillTimer;
     public void SetGPSData(double longitude, double latitude)
     {
-        if(baseRefillTimer == null)
+        if (baseRefillTimer == null)
         {
             baseRefillTimer = new Timer(1000);
             baseRefillTimer.AutoReset = true;
@@ -274,7 +272,7 @@ public class Player
         Settings.Health += (byte)(Upgrades[UpgradeType.Health] * 15);
         health = Settings.Health;
         Settings.Healing += (byte)(Upgrades[UpgradeType.Healing] * 2);
-    }      
+    }
 
     public override string ToString()
     {

@@ -398,8 +398,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1784574802}
-        m_TargetAssemblyTypeName: Assets.Scripts.UIManager, Assembly-CSharp
+      - m_Target: {fileID: 1784574804}
+        m_TargetAssemblyTypeName: Menu, Assembly-CSharp
         m_MethodName: Scan
         m_Mode: 1
         m_Arguments:
@@ -729,8 +729,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1784574802}
-        m_TargetAssemblyTypeName: Assets.Scripts.UIManager, Assembly-CSharp
+      - m_Target: {fileID: 1784574804}
+        m_TargetAssemblyTypeName: Menu, Assembly-CSharp
         m_MethodName: Connect
         m_Mode: 1
         m_Arguments:
@@ -1778,7 +1778,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1784574803}
-  - component: {fileID: 1784574802}
+  - component: {fileID: 1784574804}
   m_Layer: 0
   m_Name: UI Manager
   m_TagString: Untagged
@@ -1786,29 +1786,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1784574802
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1784574801}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ec2b366be2bf944cba673e6e990ea70, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  uiElements:
-  - key: ConnectToServer
-    element: {fileID: 1806009613}
-  - key: StartButtonText
-    element: {fileID: 1007017201}
-  - key: DevicePrefab
-    element: {fileID: 2159785509546047077, guid: 0a57133b8bffd274594d5514f2067db2, type: 3}
-  - key: DeviceList
-    element: {fileID: 1637484700}
-  - key: ConnectionDevice
-    element: {fileID: 1178169789}
 --- !u!4 &1784574803
 Transform:
   m_ObjectHideFlags: 0
@@ -1824,6 +1801,31 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1784574804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1784574801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72da3e8fcd1d6cf49b271d574437a32e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiElements:
+  - key: DevicePrefab
+    element: {fileID: 2159785509546047077, guid: 0a57133b8bffd274594d5514f2067db2, type: 3}
+  - key: DeviceList
+    element: {fileID: 1637484700}
+  - key: ConnectionDevice
+    element: {fileID: 1178169789}
+  - key: ConnectToServer
+    element: {fileID: 1806009613}
+  - key: ConnectToServerText
+    element: {fileID: 1007017201}
+  - key: Name
+    element: {fileID: 1528506847}
 --- !u!1 &1806009613
 GameObject:
   m_ObjectHideFlags: 0
@@ -1902,21 +1904,21 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 0
+  m_Interactable: 1
   m_TargetGraphic: {fileID: 1806009616}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 213152766}
-        m_TargetAssemblyTypeName: SceneManagerSkript, Assembly-CSharp
-        m_MethodName: LoadNextScene
+      - m_Target: {fileID: 1784574804}
+        m_TargetAssemblyTypeName: Menu, Assembly-CSharp
+        m_MethodName: ConnectToServer
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
+          m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: Wepons
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1806009616
