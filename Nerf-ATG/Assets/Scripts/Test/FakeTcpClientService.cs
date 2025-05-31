@@ -1,26 +1,48 @@
 ﻿using System;
-using System.Net.Sockets;
-using System.Text;
+using UnityEngine;
 
-
-public class FakeTcpClient : ITcpClientService
+public class FakeTcpClientService : ITcpClientService
 {
-    public void Close(string connectionId)
+    private static FakeTcpClientService _instance;
+    private static readonly object _lock = new object();
+
+    private FakeTcpClientService() { }
+
+    public static FakeTcpClientService Instance
     {
-        throw new NotImplementedException();
+        get
+        {
+            lock (_lock)
+            {
+                if (_instance == null)
+                {
+                    _instance = new FakeTcpClientService();
+                }
+                return _instance;
+            }
+        }
+    }
+
+    public event EventHandler<bool> Connected;
+    public event EventHandler<byte[]> dataReceived;
+
+    public void Close(ITcpClientService.Connections connectionId)
+    {
+        Debug.Log("Close");
     }
 
     public void CloseAll()
     {
+        Debug.Log("CloseAll");
     }
 
-    public void Connect(string connectionId, string ip, int port)
+    public void Connect(ITcpClientService.Connections connectionId, string ip, int port)
     {
-        throw new NotImplementedException();
+        Debug.Log($"Connect: {connectionId}, {ip}, {port}");
     }
 
-    public void SendMessage(string connectionId, Packet<ClientPacketType> packet)
+    public void Send(ITcpClientService.Connections connectionId, Packet<ClientPacketType> packet)
     {
-        throw new NotImplementedException();
+        Debug.Log($"Send: {connectionId}, {packet.GetType()}");
     }
 }

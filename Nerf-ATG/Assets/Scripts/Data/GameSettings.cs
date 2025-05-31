@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts;
 using Game.Enums;
+using System;
 using System.Buffers.Text;
 using System.Collections.Generic;
 
@@ -8,6 +9,75 @@ namespace Game
 
     namespace Enums
     {
+        public static class EnumExtensions
+        {
+            public static string ToAbbreviation(this GameType gameType)
+            {
+                return gameType switch
+                {
+                    GameType.FreeForAll => "FFA",
+                    GameType.TeamDeathMatch => "TDM",
+                    _ => gameType.ToString()
+                };
+            }
+
+            public static string ToAbbreviation(this WeaponType weaponType)
+            {
+                return weaponType switch
+                {
+                    WeaponType.Sniper => "SNP",
+                    WeaponType.Mp => "MP",
+                    WeaponType.Rifle => "RFL",
+                    WeaponType.None => "NON",
+                    _ => weaponType.ToString()
+                };
+            }
+
+            public static string ToAbbreviation(this Team team)
+            {
+                return team switch
+                {
+                    Team.Red => "RED",
+                    Team.Blue => "BLU",
+                    Team.Violet => "VIO",
+                    _ => team.ToString()
+                };
+            }
+
+            public static string ToAbbreviation(this UpgradeType upgrade)
+            {
+                return upgrade switch
+                {
+                    UpgradeType.Health => "HP",
+                    UpgradeType.Healing => "HL",
+                    UpgradeType.GpsShift => "GPS",
+                    UpgradeType.Damping => "DMP",
+                    _ => upgrade.ToString()
+                };
+            }
+
+            public static string ToAbbreviation(this Abilitys ability)
+            {
+                return ability switch
+                {
+                    Abilitys.RapidFire => "RF",
+                    Abilitys.GPSLocate => "GPS",
+                    Abilitys.Healpackage => "HLPKG",
+                    _ => ability.ToString()
+                };
+            }
+
+            public static T ToEnum<T>(this string value) where T : struct, Enum
+            {
+                if (Enum.TryParse<T>(value, out T enumValue))
+                {
+                    return enumValue;
+                }
+                return default;
+            }
+
+        }
+
         public enum UpgradeType
         {
             Health,
@@ -40,7 +110,7 @@ namespace Game
 
         public enum GameType
         {
-            DeathMatch,
+            FreeForAll,
             TeamDeathMatch
         }
     }

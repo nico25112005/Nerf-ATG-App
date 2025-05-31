@@ -17,9 +17,12 @@ internal class TcpClientService : ITcpClientService
         public CancellationTokenSource Cancellation;
     }
 
-    private readonly Dictionary<string, ConnectionData> connections = new();
+    private readonly Dictionary<ITcpClientService.Connections, ConnectionData> connections = new();
 
-    public void Connect(string connectionId, string ip, int port)
+    public event EventHandler<bool> Connected;
+    public event EventHandler<byte[]> dataReceived;
+
+    public void Connect(ITcpClientService.Connections connectionId, string ip, int port)
     {
         if (connections.ContainsKey(connectionId))
         {
@@ -48,7 +51,7 @@ internal class TcpClientService : ITcpClientService
         }
     }
 
-    public void SendMessage(string connectionId, Packet<ClientPacketType> packet)
+    public void Send(ITcpClientService.Connections connectionId, Packet<ClientPacketType> packet)
     {
         if (!connections.TryGetValue(connectionId, out var conn))
         {
@@ -73,7 +76,7 @@ internal class TcpClientService : ITcpClientService
         });
     }
 
-    private async Task ReceiveMessages(string connectionId, CancellationToken token)
+    private async Task ReceiveMessages(ITcpClientService.Connections connectionId, CancellationToken token)
     {
         if (!connections.TryGetValue(connectionId, out var conn))
             return;
@@ -87,9 +90,7 @@ internal class TcpClientService : ITcpClientService
                     byte[] bytes = new byte[PACKET_SIZE];
                     await conn.Stream.ReadAsync(bytes, 0, PACKET_SIZE, token);
 
-                    //int type = TCPClient.ConvertToInt(bytes, 0, BitConverter.ToInt32);
-
-                    // Hier kannst du weitere Verarbeitung machen oder Events auslösen
+                    dataReceived.Invoke(this, bytes);
                 }
 
                 await Task.Delay(100, token);
@@ -105,7 +106,7 @@ internal class TcpClientService : ITcpClientService
         }
     }
 
-    public void Close(string connectionId)
+    public void Close(ITcpClientService.Connections connectionId)
     {
         if (connections.TryGetValue(connectionId, out var conn))
         {
@@ -130,4 +131,5 @@ internal class TcpClientService : ITcpClientService
             Close(connectionId);
         }
     }
+
 }

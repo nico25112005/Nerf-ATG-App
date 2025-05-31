@@ -90,7 +90,7 @@ namespace Assets.Scripts
 
         private Player player;
         private string connectingDevice;
-        private TCPClient tcp;
+        //private TCPClient tcp;
 
         // ---- Events ---- //
         void OnHealthChange(object sender, EventArgs e)
@@ -133,7 +133,7 @@ namespace Assets.Scripts
             {
                 GetUIElement("ConnectToServer").GetComponent<Button>().interactable = true;
                 GetUIElement("StartButtonText").GetComponent<Text>().color = Color.white;
-                tcp.SendMessage(new BlasterConnected(player.BlasterMacAdress));
+                //tcp.SendMessage(new BlasterConnected(player.BlasterMacAdress));
             }
             else
             {
@@ -183,7 +183,7 @@ namespace Assets.Scripts
         // ----Initialization ---- //
         void Start()
         {
-            tcp = TCPClient.GetInstance();
+            //tcp = TCPClient.GetInstance();
             InitializeUIElements();
 
             player = Player.GetInstance();

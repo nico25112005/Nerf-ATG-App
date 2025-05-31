@@ -14,7 +14,7 @@ public enum ServerPacketType
      */
     PlayerInfo,
     /*
-    UUID playerID
+    UUID targetID
     String playerName
     int teamIndex
      */
@@ -27,4 +27,8 @@ public enum ServerPacketType
     double latitude
     int health
      */
+    GameStarted,
+    /*
+    UUID targetID
+    */
 }

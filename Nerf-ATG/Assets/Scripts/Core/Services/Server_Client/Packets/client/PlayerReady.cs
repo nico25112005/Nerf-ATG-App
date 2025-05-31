@@ -24,9 +24,9 @@ public class PlayerReady : Packet<ClientPacketType>
     public override void FromBytes(byte[] bytes)
     {
         playerId = Encoding.UTF8.GetString(bytes, 0, 12).TrimEnd('\0');
-        healt = TCPClient.ConvertToInt(bytes, 12, BitConverter.ToInt32);
-        weapon = (WeaponType)TCPClient.ConvertToInt(bytes, 14, BitConverter.ToInt32);
-        damping = TCPClient.ConvertToInt(bytes, 16, BitConverter.ToInt32);
+        healt = Converter.ConvertToInt(bytes, 12, BitConverter.ToInt32);
+        weapon = (WeaponType)Converter.ConvertToInt(bytes, 14, BitConverter.ToInt32);
+        damping = Converter.ConvertToInt(bytes, 16, BitConverter.ToInt32);
 
     }
 

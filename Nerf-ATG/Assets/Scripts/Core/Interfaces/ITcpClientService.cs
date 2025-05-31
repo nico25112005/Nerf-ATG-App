@@ -2,11 +2,22 @@
 
 public interface ITcpClientService
 {
-    void Connect(string connectionId, string ip, int port);
+    public enum Connections
+    {
+        Server,
+        ESP32
+    }
 
-    void SendMessage(string connectionId, Packet<ClientPacketType> packet);
+    void Connect(Connections connectionId, string ip, int port);
 
-    void Close(string connectionId);
+    void Send(Connections connectionId, Packet<ClientPacketType> packet);
+
+    //void Receive();
+
+    void Close(Connections connectionId);
 
     void CloseAll();
+
+    event EventHandler<bool> Connected;
+    event EventHandler<byte[]> dataReceived;
 }

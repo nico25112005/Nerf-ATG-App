@@ -30,6 +30,10 @@ public enum ClientPacketType
     UUID playerID
     UUID captainID
     */
+    StartGame,
+    /*
+     * UUID playerID
+    */
     PlayerReady,
     /*
     UUID playerID
