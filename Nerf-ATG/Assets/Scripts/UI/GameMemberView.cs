@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Zenject;
 
 public class GameMemberView : MonoBehaviour, IGameMemberView
 {
@@ -15,6 +16,16 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
     private GameMemberPresenter presenter;
 
 
+    [Inject]
+    private IPlayerModel playerModel;
+
+    [Inject]
+    private IGameModel gameModel;
+
+    [Inject]
+    private ITcpClientService tcpClientService;
+
+
     private bool _isHost = false;
 
     private void Awake()
@@ -22,7 +33,7 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
         registry = gameObject.AddComponent<UIElementRegistry>();
         registry.RegisterElements(uiElements);
 
-        presenter = new GameMemberPresenter(this, PlayerModel.Instance, GameModel.Instance, FakeTcpClientService.Instance);
+        presenter = new GameMemberPresenter(this, playerModel, gameModel, tcpClientService);
 
         StartCoroutine(SpawnPlayers(20));
     }

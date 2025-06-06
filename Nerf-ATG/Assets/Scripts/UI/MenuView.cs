@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Zenject;
 
 
 
@@ -14,13 +15,19 @@ public class Menu : MonoBehaviour, IMenuView
     private UIElementRegistry registry;
     private MenuPresenter presenter;
 
+    [Inject]
+    private IPlayerModel playerModel;
+
+    [Inject]
+    private ITcpClientService tcpClientService;
+
 
     private void Awake()
     {
         registry = gameObject.AddComponent<UIElementRegistry>();
         registry.RegisterElements(uiElements);
 
-        presenter = new MenuPresenter(this, PlayerModel.Instance, FakeTcpClientService.Instance);
+        presenter = new MenuPresenter(this, playerModel, tcpClientService);
     }
 
 

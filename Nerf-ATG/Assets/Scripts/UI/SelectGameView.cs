@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Game.Enums;
 using UnityEngine.SceneManagement;
+using Zenject;
 
 
 
@@ -17,13 +18,25 @@ public class SelectGameView : MonoBehaviour, ISelectGameView
     private UIElementRegistry registry;
     private SelectGamePresenter presenter;
 
+    [Inject]
+    private IPlayerModel playerModel;
+
+    [Inject]
+    private IGameModel gameModel;
+
+    [Inject]
+    private IServerModel serverModel;
+
+    [Inject]
+    private ITcpClientService tcpClientService;
+
 
     private void Awake()
     {
         registry = gameObject.AddComponent<UIElementRegistry>();
         registry.RegisterElements(uiElements);
 
-        presenter = new SelectGamePresenter(this, PlayerModel.Instance, GameModel.Instance, ServerModel.Instance, FakeTcpClientService.Instance);
+        presenter = new SelectGamePresenter(this, playerModel, gameModel, serverModel, tcpClientService);
 
     }
 

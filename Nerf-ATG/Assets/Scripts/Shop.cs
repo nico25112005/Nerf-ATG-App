@@ -37,17 +37,17 @@ namespace Assets.Scripts
             void CreateNewShopItem()
             {
                 RectTransform upgradeRectTransform = transform.GetComponent<RectTransform>();
-                float widthSpacing = ((size.width - prefabSize.width * itemInfo.UpgradesPerRow) / (itemInfo.UpgradesPerRow + 1));
-                float heightSpacing = ((size.height - prefabSize.height * itemInfo.UpgradesPerColumn) / (itemInfo.UpgradesPerColumn + 1));
+                float widthSpacing = ((size.width - prefabSize.width * itemInfo.ShopItemPerRow) / (itemInfo.ShopItemPerRow + 1));
+                float heightSpacing = ((size.height - prefabSize.height * itemInfo.ShopItemPerColumn) / (itemInfo.ShopItemPerColumn + 1));
 
                 // Placement of the shop item based on position in container
-                if (positionIndex < itemInfo.UpgradesPerRow)
+                if (positionIndex < itemInfo.ShopItemPerRow)
                 {
                     upgradeRectTransform.anchoredPosition = new Vector2(widthSpacing + (widthSpacing + prefabSize.width) * positionIndex, -(heightSpacing));
                 }
                 else
                 {
-                    upgradeRectTransform.anchoredPosition = new Vector2(widthSpacing + (widthSpacing + prefabSize.width) * (positionIndex - itemInfo.UpgradesPerColumn), -(heightSpacing * 2 + prefabSize.height));
+                    upgradeRectTransform.anchoredPosition = new Vector2(widthSpacing + (widthSpacing + prefabSize.width) * (positionIndex - itemInfo.ShopItemPerColumn), -(heightSpacing * 2 + prefabSize.height));
                 }
 
                 itemInfo.Construct(transform);

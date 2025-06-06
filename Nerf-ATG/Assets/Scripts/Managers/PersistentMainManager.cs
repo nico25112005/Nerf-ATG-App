@@ -1,32 +1,32 @@
 ﻿using Assets.Scripts.Presenter;
 using UnityEngine;
+using Zenject;
 
 public class PersistentMainManager : MonoBehaviour
 {
-    public static PersistentMainManager Instance { get; private set; }
+    [Inject]
+    private IGameModel gameModel;
+
+    [Inject]
+    private IServerModel serverModel;
+
+    [Inject]
+    private ITcpClientService tcpClientService;
+
+
 
     void Awake()
     {
-        // Singleton sicherstellen
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
 
         InitializeServices();
+        DontDestroyOnLoad(gameObject);
     }
 
     private void InitializeServices()
     {
         Debug.Log("Services wurden initialisiert.");
 
-
-
-        new TcpDataPresenter(ServerModel.Instance, GameModel.Instance, FakeTcpClientService.Instance);
+        new TcpDataPresenter(gameModel, serverModel, tcpClientService);
         
     }
 

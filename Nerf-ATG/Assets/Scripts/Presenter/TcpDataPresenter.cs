@@ -8,7 +8,7 @@ namespace Assets.Scripts.Presenter
         readonly IGameModel gameModel;
         readonly ITcpClientService tcpClientService;
 
-        public TcpDataPresenter(IServerModel serverModel, IGameModel gameModel, ITcpClientService tcpClientService)
+        public TcpDataPresenter(IGameModel gameModel, IServerModel serverModel, ITcpClientService tcpClientService)
         {
             this.serverModel = serverModel;
             this.gameModel = gameModel;

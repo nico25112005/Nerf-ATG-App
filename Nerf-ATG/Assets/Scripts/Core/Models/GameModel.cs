@@ -5,27 +5,6 @@ using System.Collections.Generic;
 
 public class GameModel : IGameModel
 {
-    private static GameModel _instance;
-    private static readonly object _lock = new object();
-
-    private GameModel() { }
-
-    public static GameModel Instance
-    {
-        get
-        {
-            lock (_lock)
-            {
-                if (_instance == null)
-                {
-                    _instance = new GameModel();
-                }
-                return _instance;
-            }
-        }
-    }
-
-
     public event EventHandler<List<PlayerInfo>> onPlayersChanged;
     public event EventHandler<EventArgs> onGameStart;
 

@@ -3,26 +3,6 @@ using UnityEngine;
 
 public class FakeTcpClientService : ITcpClientService
 {
-    private static FakeTcpClientService _instance;
-    private static readonly object _lock = new object();
-
-    private FakeTcpClientService() { }
-
-    public static FakeTcpClientService Instance
-    {
-        get
-        {
-            lock (_lock)
-            {
-                if (_instance == null)
-                {
-                    _instance = new FakeTcpClientService();
-                }
-                return _instance;
-            }
-        }
-    }
-
     public event EventHandler<bool> Connected;
     public event EventHandler<byte[]> dataReceived;
 
