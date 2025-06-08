@@ -119,7 +119,7 @@ namespace Assets.Scripts
 
         void OnWeaponSelect(object sender, EventArgs e)
         {
-            GetUIElement("WeaponIcon").GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
+            //GetUIElement("WeaponIcon").GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
         }
 
         void OnCoinsChange(object sender, EventArgs e)
@@ -207,11 +207,11 @@ namespace Assets.Scripts
                     break;
 
                 case "Weapons":
-                    GetUIElement("WeaponIcon").GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
+                    //GetUIElement("WeaponIcon").GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
                     break;
                 case "Upgrades":
                     GetUIElement("Coins").GetComponent<Text>().text = player.Coins.ToString() + " C";
-                    GetUIElement("WeaponIcon").GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
+                    //GetUIElement("WeaponIcon").GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
                     GetUIElement("TeamInfo").GetComponent<Text>().text = player.TeamInfo.ToString();
                     OnUpgradeChange(new object(), EventArgs.Empty);
                     break;
@@ -220,7 +220,7 @@ namespace Assets.Scripts
                     player.MaxAmmo = Settings.weaponInfo[player.WeaponType].MaxAmmo;
                     player.Ammo = Settings.weaponInfo[player.WeaponType].AmmoPerMag;
 
-                    GetUIElement("WeaponIcon").GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
+                    //GetUIElement("WeaponIcon").GetComponent<Image>().sprite = GameAssets.Instance.weapons[player.WeaponType];
                     GetUIElement("TeamInfo").GetComponent<Text>().text = player.TeamInfo.ToString();
 
                     OnUpgradeChange(new object(), EventArgs.Empty);

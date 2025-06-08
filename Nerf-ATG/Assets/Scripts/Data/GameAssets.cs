@@ -23,9 +23,10 @@ public class GameAssets : MonoBehaviour
     public Sprite sniper;
     public Sprite mp;
     public Sprite rifle;
-    public Sprite epmty;
+    public Sprite empty;
 
     public Dictionary<WeaponType, Sprite> weapons;
+    public Dictionary<UpgradeType, Sprite> upgrades;
 
     private void Awake()
     {
@@ -34,7 +35,15 @@ public class GameAssets : MonoBehaviour
             {WeaponType.Sniper, sniper},
             {WeaponType.Mp, mp},
             {WeaponType.Rifle, rifle},
-            {WeaponType.None , epmty}
+            {WeaponType.None , empty}
+        };
+
+        upgrades = new()
+        {
+            {UpgradeType.GpsShift, gps},
+            {UpgradeType.Health, health},
+            {UpgradeType.Healing, healing},
+            {UpgradeType.Damping, damping}
         };
     }
 }

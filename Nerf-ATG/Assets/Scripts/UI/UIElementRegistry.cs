@@ -10,7 +10,7 @@ public class UIElementEntry
 
 public class UIElementRegistry : MonoBehaviour
 {
-    private Dictionary<string, GameObject> uiElements = new Dictionary<string, GameObject>();
+    private Dictionary<string, GameObject> uiElements = new();
 
     public void RegisterElements(List<UIElementEntry> elements)
     {
