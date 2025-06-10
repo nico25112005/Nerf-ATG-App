@@ -36,7 +36,7 @@ public class SelectGamePresenter
         if (!string.IsNullOrEmpty(gameName))
         {
             tcpClientService.Send(ITcpClientService.Connections.Server, new JoinGame(playerModel.Id.ToString(), gameName));
-            gameModel.gameInfo = serverModel.activeGames.First(g => g.gameName == gameName);
+            gameModel.gameInfo = serverModel.ActiveGames.First(g => g.gameName == gameName);
         }
     }
 
@@ -52,4 +52,8 @@ public class SelectGamePresenter
         tcpClientService.CloseAll();
     }
 
+    public void Dispose()
+    {
+        serverModel.onActiveGamesChanged -= UpdateGameList;
+    }
 }

@@ -456,6 +456,8 @@ MonoBehaviour:
     element: {fileID: 912715159}
   - key: WeaponPrefab
     element: {fileID: 6292810955297601619, guid: 066d0a962600e444b9d3fcfb0a275229, type: 3}
+  - key: NextButton
+    element: {fileID: 1238797620}
 --- !u!1 &317681972
 GameObject:
   m_ObjectHideFlags: 0
@@ -1073,14 +1075,14 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 1238797623}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 213152766}
-        m_TargetAssemblyTypeName: SceneManagerSkript, Assembly-CSharp
-        m_MethodName: LoadNextScene
+      - m_Target: {fileID: 234110357}
+        m_TargetAssemblyTypeName: WeaponView, Assembly-CSharp
+        m_MethodName: Next
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1504,8 +1506,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 213152766}
-        m_TargetAssemblyTypeName: SceneManagerSkript, Assembly-CSharp
+      - m_Target: {fileID: 234110357}
+        m_TargetAssemblyTypeName: WeaponView, Assembly-CSharp
         m_MethodName: Quit
         m_Mode: 1
         m_Arguments:

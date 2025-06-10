@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 public interface IServerModel
 {
     event EventHandler<List<GameInfo>> onActiveGamesChanged;
-    IEnumerable<GameInfo> activeGames { get; }
+    IEnumerable<GameInfo> ActiveGames { get; }
 
     void addActiveGame(GameInfo gameInfo);
     void removeActiveGame(GameInfo gameInfo);

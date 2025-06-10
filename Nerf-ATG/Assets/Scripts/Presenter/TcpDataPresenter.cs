@@ -42,7 +42,7 @@ namespace Assets.Scripts.Presenter
 
                     GameInfo gameinfo = new GameInfo(bytes);
 
-                    if (!serverModel.activeGames.Contains(gameinfo))
+                    if (!serverModel.ActiveGames.Contains(gameinfo))
                     {
                         serverModel.addActiveGame(gameinfo);
                     }

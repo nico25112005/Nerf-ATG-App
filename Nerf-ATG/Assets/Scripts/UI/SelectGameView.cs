@@ -93,5 +93,10 @@ public class SelectGameView : MonoBehaviour, ISelectGameView
         SceneManager.LoadScene("Menu");
     }
 
+    private void OnDestroy()
+    {
+        presenter.Dispose();
+    }
+
 }
 

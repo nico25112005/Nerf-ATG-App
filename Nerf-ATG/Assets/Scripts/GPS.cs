@@ -1,11 +1,11 @@
 using System;
-using System.Collections;
-using System.Threading;
-using UnityEngine;
-using UnityEngine.Android;
 
 public class GPS
 {
+    double Latitude { get; set; }
+    double Longitude { get; set; }
+
+
     public static double CalculateDistance(GPSData gps1, GPSData gps2)
     {
         double dlon = gps2.Longitude - gps1.Longitude;
@@ -24,7 +24,6 @@ public class GPS
             return false;
 
         double distance = CalculateDistance(location1, location2);
-        Debug.Log("Distance: " + distance);
         return distance <= radius; // Überprüfung, ob die Distanz kleiner oder gleich 8 Metern ist
     }
 }

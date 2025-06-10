@@ -6,7 +6,7 @@ public class ServerModel : IServerModel
     public event EventHandler<List<GameInfo>> onActiveGamesChanged;
 
     List<GameInfo> _activeGames = new();
-    public IEnumerable<GameInfo> activeGames => _activeGames;
+    public IEnumerable<GameInfo> ActiveGames => _activeGames;
 
     public void addActiveGame(GameInfo gameInfo)
     {

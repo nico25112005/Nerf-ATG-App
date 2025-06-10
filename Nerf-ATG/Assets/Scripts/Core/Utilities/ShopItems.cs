@@ -1,6 +1,7 @@
 ﻿using Game;
 using Game.Enums;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,8 +21,10 @@ public class UpgradeShopItem : IShopItem<GameObject>
     public byte ShopItemPerRow => 2;
 
     public byte ShopItemPerColumn => 2;
+
     public void Construct(GameObject instance)
     {
+        instance.name = upgradeInfo.Type.ToString();
         // Update the price display, image, and add the upgrade button event listener
         instance.transform.Find("PriceBackground").Find("Price").GetComponent<Text>().text = upgradeInfo.Price.GetValue(0).ToString() + " C";
         instance.transform.Find("UpgradeImageBackground").Find("UpgradeImage").GetComponent<Image>().sprite = GameAssets.Instance.upgrades[upgradeInfo.Type];
@@ -30,42 +33,8 @@ public class UpgradeShopItem : IShopItem<GameObject>
         // Update the progress bar length based on upgrade levels
         instance.transform.Find("ProgressbarBackground").Find("Progressbar").GetComponent<RectTransform>().sizeDelta =
             new Vector2(0, instance.transform.Find("ProgressbarBackground").Find("Progressbar").GetComponent<RectTransform>().rect.height); // Set progress bar to 0;
+    
     }
-
-    /*
-    void Buy(GameObject upgradeTransform)
-    {
-        if (Price.Length == player.Upgrades[Type])
-        {
-            Debug.Log("maximum upgrades");
-            return;
-        }
-        if (player.Coins - Price[player.Upgrades[Type]] < 0)
-        {
-            Debug.Log("zu wenig geld");
-            return;
-        }
-        // Player buying the upgrade
-        //player.BuyUpgrade(Type, (byte)Price.GetValue(player.Upgrades[Type]), (byte)Price.Length) --> Old
-
-        if (player.Coins - (byte)Price.GetValue(player.Upgrades[Type]) >= 0 && (byte)Price.Length > player.Upgrades[Type])
-        {
-            //pay
-            player.Coins -= (byte)Price.GetValue(player.Upgrades[Type]);
-            player.SetUpgrades(Type, (byte)(player.Upgrades[Type] + 1));
-
-
-            // Update the progress bar and price
-            upgradeTransform.transform.Find("ProgressbarBackground").Find("Progressbar").GetComponent<RectTransform>().sizeDelta =
-            new Vector2((upgradeTransform.GetComponent<RectTransform>().rect.width - 20) / Price.Length * player.Upgrades[Type],
-                upgradeTransform.transform.Find("ProgressbarBackground").Find("Progressbar").GetComponent<RectTransform>().rect.height); // Set progress bar to correct length
-
-            upgradeTransform.transform.Find("PriceBackground").Find("Price").GetComponent<Text>().text =
-            (Price.Length > player.Upgrades[Type]) ? Price.GetValue(player.Upgrades[Type]) + " C" : "MAX";
-        }
-        Debug.Log(player.ToString());
-    }
-    */
 }
 
 

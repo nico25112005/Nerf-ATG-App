@@ -198,6 +198,69 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 56294794}
   m_CullTransparentMesh: 1
+--- !u!1 &97690369
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 97690371}
+  - component: {fileID: 97690370}
+  m_Layer: 0
+  m_Name: SceneContext
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &97690370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 97690369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89715ad69b973a14899afa2c6730b30b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _scriptableObjectInstallers: []
+  _monoInstallers: []
+  _installerPrefabs: []
+  _autoRun: 1
+  OnPreInstall:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPostInstall:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPreResolve:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPostResolve:
+    m_PersistentCalls:
+      m_Calls: []
+  _parentNewObjectsUnderSceneContext: 0
+  _contractNames: []
+  _parentContractNames: []
+--- !u!4 &97690371
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 97690369}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &109820152
 GameObject:
   m_ObjectHideFlags: 0
@@ -485,7 +548,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 234110356}
-  - component: {fileID: 234110355}
+  - component: {fileID: 234110357}
   m_Layer: 0
   m_Name: UI Manager
   m_TagString: Untagged
@@ -493,32 +556,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &234110355
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 234110354}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ec2b366be2bf944cba673e6e990ea70, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  uiElements:
-  - key: TeamInfo
-    element: {fileID: 117503962}
-  - key: WeaponIcon
-    element: {fileID: 225293764}
-  - key: Coins
-    element: {fileID: 1173410780}
-  - key: Stats
-    element: {fileID: 536733635}
-  uiObjects:
-  - {fileID: 117503962}
-  - {fileID: 225293764}
-  - {fileID: 1173410780}
-  - {fileID: 536733635}
 --- !u!4 &234110356
 Transform:
   m_ObjectHideFlags: 0
@@ -534,6 +571,33 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &234110357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 234110354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6a1d5babdcab7047ba4f752dac594c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiElements:
+  - key: Container
+    element: {fileID: 912715159}
+  - key: UpgradePrefab
+    element: {fileID: 7740030878522250820, guid: 2ecec8044e4a55144b7c426fb4c937d3, type: 3}
+  - key: Team
+    element: {fileID: 117503962}
+  - key: Coins
+    element: {fileID: 1173410780}
+  - key: Weapon
+    element: {fileID: 225293764}
+  - key: Stats
+    element: {fileID: 536733635}
+  - key: NextButton
+    element: {fileID: 1238797620}
 --- !u!1 &317681972
 GameObject:
   m_ObjectHideFlags: 0
@@ -963,7 +1027,13 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 2
-  m_Text: 
+  m_Text: 'Health: 100
+
+    Healing: 4 hp/s
+
+    GpsShift: 0 m
+
+    Sound: 100 %'
 --- !u!1 &912715159
 GameObject:
   m_ObjectHideFlags: 0
@@ -973,9 +1043,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 912715160}
-  - component: {fileID: 912715161}
   m_Layer: 0
-  m_Name: UpgradeShop
+  m_Name: UpgradeShopContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1000,19 +1069,6 @@ RectTransform:
   m_AnchoredPosition: {x: -175, y: 0}
   m_SizeDelta: {x: -450, y: -100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &912715161
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 912715159}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 952d672f2d625e54da003febf33447dc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  prefab: {fileID: 7740030878522250820, guid: 2ecec8044e4a55144b7c426fb4c937d3, type: 3}
 --- !u!1 &1047816216
 GameObject:
   m_ObjectHideFlags: 0
@@ -1406,9 +1462,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 213152766}
-        m_TargetAssemblyTypeName: SceneManagerSkript, Assembly-CSharp
-        m_MethodName: LoadNextScene
+      - m_Target: {fileID: 234110357}
+        m_TargetAssemblyTypeName: UpgradeView, Assembly-CSharp
+        m_MethodName: Next
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1595,9 +1651,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 912715161}
-        m_TargetAssemblyTypeName: Assets.Scripts.Shop, Assembly-CSharp
-        m_MethodName: ResetUpgrades
+      - m_Target: {fileID: 234110357}
+        m_TargetAssemblyTypeName: UpgradeView, Assembly-CSharp
+        m_MethodName: resetUpgrades
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1827,8 +1883,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 213152766}
-        m_TargetAssemblyTypeName: SceneManagerSkript, Assembly-CSharp
+      - m_Target: {fileID: 234110357}
+        m_TargetAssemblyTypeName: UpgradeView, Assembly-CSharp
         m_MethodName: Quit
         m_Mode: 1
         m_Arguments:
@@ -1884,3 +1940,4 @@ SceneRoots:
   - {fileID: 234110356}
   - {fileID: 519420032}
   - {fileID: 317681975}
+  - {fileID: 97690371}

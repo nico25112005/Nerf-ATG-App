@@ -8,7 +8,7 @@ using Zenject;
 
 
 
-public class WeaponView : MonoBehaviour, IWeaponView
+public class WeaponView : MonoBehaviour, IWeaponView, IWeaponViewUnityExtension
 {
     [Header("UI References")]
     [SerializeField]
@@ -35,7 +35,6 @@ public class WeaponView : MonoBehaviour, IWeaponView
 
         foreach (WeaponInfo weaponinfo in Settings.weaponInfo.Values)
         {
-            Debug.Log(weaponinfo);
              shop.CreateShopItem(new WeaponShopItem(weaponinfo, presenter.BuyWeapon));
         }
 
@@ -51,7 +50,7 @@ public class WeaponView : MonoBehaviour, IWeaponView
         registry.GetElement("Coins").GetComponent<Text>().text = coins.ToString() + "C";
     }
 
-    public void UpdateWeapon(WeaponType weaponType)
+    public void UpdateWeaponIcon(WeaponType weaponType)
     {
         registry.GetElement("Weapon").GetComponent<Image>().sprite = GameAssets.Instance.weapons[weaponType];
     }
@@ -60,13 +59,22 @@ public class WeaponView : MonoBehaviour, IWeaponView
 
     public void Next()
     {
-
+        presenter.NextScene();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 
     public void Quit()
     {
-        //presenter.Quit();
+        presenter.Quit();
     }
 
+    public void SetNextSceneActive(bool value)
+    {
+        registry.GetElement("NextButton").GetComponent<Button>().interactable = value;
+    }
+
+    private void OnDestroy()
+    {
+        presenter.Dispose();
+    }
 }
