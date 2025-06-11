@@ -206,7 +206,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 234110355}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Assets.Scripts.UIManager, Assembly-CSharp
         m_MethodName: SetBaseLocation
         m_Mode: 1
@@ -563,54 +563,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 163372236}
   m_CullTransparentMesh: 1
---- !u!1 &213152765
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 213152767}
-  - component: {fileID: 213152766}
-  m_Layer: 0
-  m_Name: SceneManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &213152766
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 213152765}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4cafbf85f9914ee4b8f3f152a9f8531c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!224 &213152767
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 213152765}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 10}
-  m_LocalScale: {x: 0.45958334, y: 0.45958334, z: 0.45958334}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 519420032}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 551.5, y: 272}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &220155774
 GameObject:
   m_ObjectHideFlags: 0
@@ -628,7 +580,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &220155775
 RectTransform:
   m_ObjectHideFlags: 0
@@ -772,73 +724,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 234110356}
-  - component: {fileID: 234110355}
+  - component: {fileID: 234110357}
   m_Layer: 0
   m_Name: UI Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
---- !u!114 &234110355
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 234110354}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ec2b366be2bf944cba673e6e990ea70, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  uiElements:
-  - key: TeamInfo
-    element: {fileID: 117503962}
-  - key: WeaponIcon
-    element: {fileID: 225293764}
-  - key: AbilityIcon
-    element: {fileID: 2045226857}
-  - key: Stats
-    element: {fileID: 536733635}
-  - key: HealthBar
-    element: {fileID: 6114593037414108350}
-  - key: AmmoBar
-    element: {fileID: 163372236}
-  - key: MaxAmmoBar
-    element: {fileID: 795658813}
-  - key: HomeLocation
-    element: {fileID: 220155774}
-  - key: Map
-    element: {fileID: 6290140934481344125}
-  - key: HomePin
-    element: {fileID: 9156334756064084915, guid: e8f470dcedbcf4d4ea7ecffbc418e255, type: 3}
-  - key: SetBaseButton
-    element: {fileID: 39577593}
-  - key: TilePrefab
-    element: {fileID: 3409876656704266787, guid: 15215c763ea258d4fa558af1efc54347, type: 3}
-  - key: EnemyPin
-    element: {fileID: 9156334756064084915, guid: 1837ae056dc73d04abf51e2df4c88798, type: 3}
-  - key: TeamMatePin
-    element: {fileID: 9156334756064084915, guid: ef0f51a106c7f154094f618e94584e07, type: 3}
-  - key: AbilityBackground
-    element: {fileID: 954172782}
-  uiObjects:
-  - {fileID: 117503962}
-  - {fileID: 225293764}
-  - {fileID: 2045226857}
-  - {fileID: 536733635}
-  - {fileID: 6114593037414108350}
-  - {fileID: 163372236}
-  - {fileID: 795658813}
-  - {fileID: 220155774}
-  - {fileID: 6290140934481344125}
-  - {fileID: 9156334756064084915, guid: e8f470dcedbcf4d4ea7ecffbc418e255, type: 3}
-  - {fileID: 39577593}
-  - {fileID: 3409876656704266787, guid: 15215c763ea258d4fa558af1efc54347, type: 3}
-  - {fileID: 9156334756064084915, guid: 1837ae056dc73d04abf51e2df4c88798, type: 3}
-  - {fileID: 9156334756064084915, guid: ef0f51a106c7f154094f618e94584e07, type: 3}
-  - {fileID: 954172782}
 --- !u!4 &234110356
 Transform:
   m_ObjectHideFlags: 0
@@ -854,6 +747,41 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &234110357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 234110354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec595b095b27d3948a49d6443ea1e507, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiElements:
+  - key: Weapon
+    element: {fileID: 225293764}
+  - key: Team
+    element: {fileID: 117503962}
+  - key: Stats
+    element: {fileID: 536733635}
+  - key: Map
+    element: {fileID: 6290140934481344125}
+  - key: EnemyMarkerPrefab
+    element: {fileID: 9156334756064084915, guid: 1837ae056dc73d04abf51e2df4c88798, type: 3}
+  - key: AllieMarkerPrefab
+    element: {fileID: 9156334756064084915, guid: ef0f51a106c7f154094f618e94584e07, type: 3}
+  - key: SpawnMarkerPrefab
+    element: {fileID: 9156334756064084915, guid: e8f470dcedbcf4d4ea7ecffbc418e255, type: 3}
+  - key: TilePrefab
+    element: {fileID: 3409876656704266787, guid: 15215c763ea258d4fa558af1efc54347, type: 3}
+  - key: MaxAmmoBar
+    element: {fileID: 795658813}
+  - key: HealthBar
+    element: {fileID: 6114593037414108350}
+  - key: AmmoBar
+    element: {fileID: 163372236}
 --- !u!1 &283994492
 GameObject:
   m_ObjectHideFlags: 0
@@ -1432,7 +1360,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 399493897}
-  - {fileID: 213152767}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &536733635
@@ -1674,7 +1601,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 234110355}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Assets.Scripts.UIManager, Assembly-CSharp
         m_MethodName: aktivateAbility
         m_Mode: 1
@@ -2035,6 +1962,69 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1191131188}
   m_CullTransparentMesh: 1
+--- !u!1 &1192639268
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1192639270}
+  - component: {fileID: 1192639269}
+  m_Layer: 0
+  m_Name: SceneContext
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1192639269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1192639268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89715ad69b973a14899afa2c6730b30b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _scriptableObjectInstallers: []
+  _monoInstallers: []
+  _installerPrefabs: []
+  _autoRun: 1
+  OnPreInstall:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPostInstall:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPreResolve:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPostResolve:
+    m_PersistentCalls:
+      m_Calls: []
+  _parentNewObjectsUnderSceneContext: 0
+  _contractNames: []
+  _parentContractNames: []
+--- !u!4 &1192639270
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1192639268}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1201434118
 GameObject:
   m_ObjectHideFlags: 0
@@ -2199,7 +2189,7 @@ GameObject:
   - component: {fileID: 1333786538}
   - component: {fileID: 1333786537}
   m_Layer: 0
-  m_Name: Map
+  m_Name: MapMask
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2705,7 +2695,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 213152766}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SceneManagerSkript, Assembly-CSharp
         m_MethodName: Quit
         m_Mode: 1
@@ -3198,7 +3188,7 @@ GameObject:
   - component: {fileID: 3968884858548173180}
   - component: {fileID: 1864406066644802094}
   m_Layer: 0
-  m_Name: Tile5
+  m_Name: Map
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3219,3 +3209,4 @@ SceneRoots:
   - {fileID: 234110356}
   - {fileID: 519420032}
   - {fileID: 317681975}
+  - {fileID: 1192639270}

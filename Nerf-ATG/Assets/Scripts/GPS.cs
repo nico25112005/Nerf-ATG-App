@@ -1,10 +1,16 @@
 using System;
+using UnityEditor.Build;
 
 public class GPS
 {
-    double Latitude { get; set; }
-    double Longitude { get; set; }
+    public double Latitude { get; private set; }
+    public double Longitude { get; private set; }
 
+    public GPS(double latitude, double longitude)
+    {
+        Latitude = latitude;
+        Longitude = longitude;
+    }
 
     public static double CalculateDistance(GPSData gps1, GPSData gps2)
     {

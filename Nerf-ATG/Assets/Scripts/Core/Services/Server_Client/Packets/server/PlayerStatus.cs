@@ -3,20 +3,20 @@ using System.Text;
 
 public class PlayerStatus : Packet<ServerPacketType>
 {
-    private string playerId;
-    private string playerName;
-    private int teamIndex;
-    private double longitude;
-    private double latitude;
-    private int health;
+    public string Id { get; set; }
+    public string name { get; set; }
+    public int teamIndex { get; set; }
+    public double longitude { get; set; }
+    public double latitude { get; set; }
+    public int health { get; set; }
 
     public PlayerStatus(byte[] bytes) : base(bytes, ServerPacketType.PlayerStatus) { }
 
-    public PlayerStatus(string playerId, string playerName, int teamIndex, double longitude, double latitude, int health)
+    public PlayerStatus(string Id, string Name, int teamIndex, double longitude, double latitude, int health)
         : base(ServerPacketType.PlayerStatus)
     {
-        this.playerId = playerId;
-        this.playerName = playerName;
+        this.Id = Id;
+        this.name = Name;
         this.teamIndex = teamIndex;
         this.longitude = longitude;
         this.latitude = latitude;
@@ -25,8 +25,8 @@ public class PlayerStatus : Packet<ServerPacketType>
 
     public override void FromBytes(byte[] bytes)
     {
-        playerId = Encoding.UTF8.GetString(bytes, 0, 12).TrimEnd('\0');
-        playerName = Encoding.UTF8.GetString(bytes, 12, 16).TrimEnd('\0');
+        Id = Encoding.UTF8.GetString(bytes, 0, 12).TrimEnd('\0');
+        name = Encoding.UTF8.GetString(bytes, 12, 16).TrimEnd('\0');
         teamIndex = BitConverter.ToInt32(bytes, 28);
         longitude = BitConverter.ToDouble(bytes, 32);
         latitude = BitConverter.ToDouble(bytes, 40);
@@ -35,10 +35,10 @@ public class PlayerStatus : Packet<ServerPacketType>
 
     public override void ToBytes(byte[] bytes)
     {
-        byte[] idBytes = Encoding.UTF8.GetBytes(playerId.PadRight(12, '\0'));
+        byte[] idBytes = Encoding.UTF8.GetBytes(Id.PadRight(12, '\0'));
         Array.Copy(idBytes, 0, bytes, 0, 12);
 
-        byte[] nameBytes = Encoding.UTF8.GetBytes(playerName.PadRight(16, '\0'));
+        byte[] nameBytes = Encoding.UTF8.GetBytes(name.PadRight(16, '\0'));
         Array.Copy(nameBytes, 0, bytes, 12, 16);
 
         Array.Copy(BitConverter.GetBytes(teamIndex), 0, bytes, 28, 4);
@@ -49,6 +49,6 @@ public class PlayerStatus : Packet<ServerPacketType>
 
     public override string ToString()
     {
-        return $"PlayerStatus{{playerId='{playerId}', playerName='{playerName}', teamIndex={teamIndex}, longitude={longitude}, latitude={latitude}, health={health}}}";
+        return $"PlayerStatus{{playerId='{Id}', playerName='{name}', teamIndex={teamIndex}, longitude={longitude}, latitude={latitude}, health={health}}}";
     }
 }

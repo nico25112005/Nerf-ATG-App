@@ -6,7 +6,7 @@ using Zenject;
 
 
 
-public class Menu : MonoBehaviour, IMenuView
+public class MenuView : MonoBehaviour, IMenuView
 {
     [Header("UI References")]
     [SerializeField]

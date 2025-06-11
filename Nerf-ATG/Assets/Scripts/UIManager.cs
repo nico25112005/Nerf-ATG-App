@@ -390,6 +390,7 @@ namespace Assets.Scripts
                         else
                         {
                             Texture2D texture = ((DownloadHandlerTexture)www.downloadHandler).texture;
+                            
                             Debug.Log($"Texturewidth: {texture.width} Textureheight: {texture.height}");
 
                             // Aktualisiere das UI-Element mit dem neuen Tile

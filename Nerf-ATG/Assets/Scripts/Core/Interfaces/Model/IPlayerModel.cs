@@ -8,6 +8,12 @@ public interface IPlayerModel
     event EventHandler<byte> OnCoinsChanged;
     event EventHandler<Dictionary<UpgradeType, byte>> OnUpgradesChanged;
 
+    event EventHandler<byte> OnHealthChanged;
+    event EventHandler<byte> OnAmmoChanged;
+    event EventHandler<ushort> OnMaxAmmoChanged;
+
+    event EventHandler<GPS> OnLocationChanged;
+
     string Name { get; set; }
     Guid Id { get; }
     WeaponType WeaponType { get; set; }

@@ -111,6 +111,13 @@ namespace Game
             FreeForAll,
             TeamDeathMatch
         }
+
+        public enum MarkerType
+        {
+            Enemy,
+            Allie,
+            Base
+        }
     }
 
     public static class Settings

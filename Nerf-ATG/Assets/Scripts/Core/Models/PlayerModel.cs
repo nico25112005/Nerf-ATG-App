@@ -10,6 +10,11 @@ public class PlayerModel : IPlayerModel
     public event EventHandler<byte> OnCoinsChanged;
     public event EventHandler<Dictionary<UpgradeType, byte>> OnUpgradesChanged;
 
+    public event EventHandler<byte> OnHealthChanged;
+    public event EventHandler<byte> OnAmmoChanged;
+    public event EventHandler<ushort> OnMaxAmmoChanged;
+    public event EventHandler<GPS> OnLocationChanged;
+
     private PlayerModel()
     {
         Coins = Settings.Coins;
@@ -29,11 +34,50 @@ public class PlayerModel : IPlayerModel
     public string Name { get; set; } = "";
     public Guid Id { get;} = Guid.NewGuid();
 
-    public byte Health { get; set; }
+    private byte _health;
+    public byte Health
+    {
+        get => _health;
+        set
+        {
+            _health = value;
+            OnHealthChanged?.Invoke(this, _health);
+        }
+    }
+
     public byte Healing { get; set; }
-    public byte Ammo { get; set; }
-    public ushort MaxAmmo { get; set; }
-    public GPS Location { get; set; }
+
+    private byte _ammo;
+    public byte Ammo
+    { get => _ammo;
+        set
+        {
+            _ammo = value;
+            OnAmmoChanged?.Invoke(this, _ammo);
+        }
+    }
+
+    private ushort _maxAmmo;
+    public ushort MaxAmmo 
+    {
+        get => _maxAmmo;
+        set
+        {
+            _maxAmmo = value;
+            OnMaxAmmoChanged?.Invoke(this, _maxAmmo);
+        }
+    }
+
+    private GPS _location;
+    public GPS Location
+    {
+        get => _location;
+        set
+        {
+            _location = value;
+            OnLocationChanged?.Invoke(this, _location);
+        }
+    }
 
     public Team Team { get; set; }
 

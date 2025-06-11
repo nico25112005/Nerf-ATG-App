@@ -31,4 +31,11 @@ public enum ServerPacketType
     /*
     UUID targetID
     */
+    GpsInfo,
+    /*
+    String DisplayName
+    MarkerType type
+    double longitude
+    double latitude
+    */
 }

@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 public interface IGameModel
 {
     event EventHandler<List<PlayerInfo>> onPlayersChanged;
+    event EventHandler<EventArgs> onGameStart;
+    event EventHandler<PlayerStatus> onPlayerStatusChanged;
+    event EventHandler<PlayerStatus> onPlayerStatusRemoved;
 
     IEnumerable<PlayerInfo> players { get; }
     void AddPlayer(PlayerInfo playerInfo);
@@ -15,8 +18,12 @@ public interface IGameModel
 
     GameInfo gameInfo { get; set; }
 
-    event EventHandler<EventArgs> onGameStart;
     void GameStart();
+
+    IReadOnlyDictionary<string, PlayerStatus> playerStatus { get; }
+
+    void UpdatePlayerStatus(PlayerStatus playerStatus);
+    void RemovePlayerStatus(string playerID);
 
 }
 
