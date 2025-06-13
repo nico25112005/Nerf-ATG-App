@@ -1,90 +1,90 @@
 ﻿using System;
-using System.Threading;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Android;
 
-public class GpsDataService : IGpsDataService
+public class GpsDataService : MonoBehaviour, IGpsDataService
 {
+    public static GpsDataService Instance { get; private set; }
+
     public event EventHandler<GPS> NewGpsData;
 
-    private CancellationTokenSource _gpsTokenSource;
+    private Coroutine gpsCoroutine;
 
-    public async void StartGps()
+    private void Awake()
     {
-        #if UNITY_ANDROID
-        if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
+        if (Instance != null && Instance != this)
         {
-            Permission.RequestUserPermission(Permission.FineLocation);
-            await AwaitSecondsRealtime(1f); // Gib Zeit für Dialog
-        }
-        #endif
-
-        if (!Input.location.isEnabledByUser)
-        {
-            Debug.LogWarning("Location not enabled by user.");
+            Destroy(this);
             return;
         }
 
-        Input.location.Start(0.5f, 0.5f);
+        Instance = this;
+        DontDestroyOnLoad(this);
+    }
 
-        int maxWait = 20;
-        while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
-        {
-            await AwaitSecondsRealtime(1f);
-            maxWait--;
-        }
-
-        if (Input.location.status == LocationServiceStatus.Failed || maxWait <= 0)
-        {
-            Debug.LogWarning("Unable to start location services.");
+    public void StartGps()
+    {
+        if (gpsCoroutine != null)
             return;
-        }
-
-        _gpsTokenSource = new CancellationTokenSource();
-        _ = RunGpsUpdateLoop(_gpsTokenSource.Token);
+        Debug.Log("GpsRoutine started");
+        gpsCoroutine = StartCoroutine(GpsRoutine());
     }
 
     public void StopGps()
     {
-        _gpsTokenSource?.Cancel();
+        if (gpsCoroutine != null)
+        {
+            StopCoroutine(gpsCoroutine);
+            gpsCoroutine = null;
+        }
+
         if (Input.location.isEnabledByUser && Input.location.status == LocationServiceStatus.Running)
         {
             Input.location.Stop();
         }
     }
 
-    private async System.Threading.Tasks.Task RunGpsUpdateLoop(CancellationToken token)
+    private IEnumerator GpsRoutine()
     {
-        while (!token.IsCancellationRequested)
+#if UNITY_ANDROID
+        if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
         {
-            UpdateGps();
-            await System.Threading.Tasks.Task.Delay(50, token); // alle 50ms
+            Permission.RequestUserPermission(Permission.FineLocation);
+            yield return new WaitForSecondsRealtime(1f); // Warte auf Dialog
         }
-    }
+#endif
 
-    private void UpdateGps()
-    {
-        if (Input.location.status == LocationServiceStatus.Running)
+        if (!Input.location.isEnabledByUser)
         {
-            try
+            Debug.LogWarning("Location not enabled by user.");
+            yield break;
+        }
+
+        Input.location.Start(0.5f, 0.5f);
+
+        int maxWait = 20;
+        while (Input.location.status == LocationServiceStatus.Initializing && maxWait-- > 0)
+        {
+            yield return new WaitForSecondsRealtime(1f);
+        }
+
+        if (Input.location.status == LocationServiceStatus.Failed || maxWait <= 0)
+        {
+            Debug.LogWarning("Unable to start location services.");
+            yield break;
+        }
+
+        // Loop
+        while (true)
+        {
+            Debug.Log("Getting GPS Data");
+            if (Input.location.status == LocationServiceStatus.Running)
             {
                 var data = Input.location.lastData;
-                NewGpsData?.Invoke(this, new GPS(data.latitude, data.longitude));
-                Debug.Log($"GPS update: {data.latitude}, {data.longitude}, accuracy: {data.horizontalAccuracy}");
+                NewGpsData?.Invoke(this, new GPS(data.longitude, data.latitude));
             }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-            }
+            yield return new WaitForSecondsRealtime(0.25f);
         }
-        else
-        {
-            Debug.LogWarning("GPS not running.");
-        }
-    }
-
-    private static System.Threading.Tasks.Task AwaitSecondsRealtime(float seconds)
-    {
-        return System.Threading.Tasks.Task.Delay(TimeSpan.FromSeconds(seconds));
     }
 }

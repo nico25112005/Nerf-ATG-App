@@ -200,6 +200,7 @@ public class Player
 
             GpsDataChanged?.Invoke(this, EventArgs.Empty);
 
+            /*
             if (GPS.IsWithinRadius(GPSData, BaseLocation, Settings.BaseRadius))
             {
                 baseRefillTimer.Start();
@@ -208,7 +209,7 @@ public class Player
             {
                 baseRefillTimer.Stop();
             }
-
+            */
         }
         catch (Exception e)
         {

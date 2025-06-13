@@ -13,6 +13,7 @@ public interface IPlayerModel
     event EventHandler<ushort> OnMaxAmmoChanged;
 
     event EventHandler<GPS> OnLocationChanged;
+    event EventHandler<Abilitys> AbilityActivated;
 
     string Name { get; set; }
     Guid Id { get; }
@@ -30,4 +31,7 @@ public interface IPlayerModel
     ushort MaxAmmo { get; set; }
 
     GPS Location { get; set; }
+
+
+    void ActivateAbility(Abilitys ability);
 }

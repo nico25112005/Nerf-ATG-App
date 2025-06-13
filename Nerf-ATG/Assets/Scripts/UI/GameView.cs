@@ -2,10 +2,8 @@ using Game;
 using Game.Enums;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Zenject;
-using Zenject.SpaceFighter;
 
 
 
@@ -26,9 +24,10 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
     [Inject]
     private ITcpClientService tcpClientService;
     [Inject]
-    private IGpsDataService gpsDataService;
-    [Inject]
+    private IMainThreadExecutor mainThreadExecutor;
+
     private IGpsTileService gpsTileService;
+    private IGpsDataService gpsDataService;
 
 
     GameObject[,] maptiles = new GameObject[3, 3];
@@ -39,9 +38,24 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
         registry = gameObject.AddComponent<UIElementRegistry>();
         registry.RegisterElements(uiElements);
 
+        // Beispiel: automatisches Erzeugen, falls nicht vorhanden
+        if (GpsDataService.Instance == null)
+        {
+            new GameObject("GpsDataService").AddComponent<GpsDataService>();
+        }
+
+        gpsDataService = GpsDataService.Instance;
+
+        if(GpsTileService.Instance == null)
+        {
+            new GameObject("GpsTileService").AddComponent<GpsTileService>();
+        }
+
+        gpsTileService = GpsTileService.Instance;
+
         gpsTileService.SetMapSize(new System.Numerics.Vector2(registry.GetElement("Map").GetComponent<RectTransform>().rect.width, registry.GetElement("Map").GetComponent<RectTransform>().rect.height));
 
-        gamePresenter = new GamePresenter(this, playerModel, tcpClientService);
+        gamePresenter = new GamePresenter(this, playerModel, gameModel, tcpClientService, mainThreadExecutor);
 
         gpsPresenter = new GpsPresenter(this, playerModel, gameModel, gpsTileService, gpsDataService, tcpClientService);
 
@@ -56,18 +70,18 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
         RectTransform progressBarRect = ammoBar.transform.Find("Progressbar").GetComponent<RectTransform>();
 
         ammoBar.transform.Find("TextBackground").Find("Text").GetComponent<Text>().text = "Ammo: " + ammo.ToString();
-        progressBarRect.sizeDelta = 
+        progressBarRect.sizeDelta =
             new Vector2((ammoBar.GetComponent<RectTransform>().rect.width - 20) / Settings.weaponInfo[weaponType].AmmoPerMag * ammo, progressBarRect.rect.height);
     }
 
-    public void UpdateHealthBar(byte health)
+    public void UpdateHealthBar(byte health, byte maxHealth)
     {
         GameObject healthBar = registry.GetElement("HealthBar");
         RectTransform progressBarRect = healthBar.transform.Find("Progressbar").GetComponent<RectTransform>();
 
         healthBar.transform.Find("TextBackground").Find("Text").GetComponent<Text>().text = "Health: " + health.ToString();
         progressBarRect.sizeDelta =
-            new Vector2((healthBar.GetComponent<RectTransform>().rect.width - 20) / Settings.Health * health, progressBarRect.rect.height);
+            new Vector2((healthBar.GetComponent<RectTransform>().rect.width - 20) / maxHealth * health, progressBarRect.rect.height);
     }
 
     public void UpdateMaxAmmoBar(WeaponType weaponType, ushort maxAmmo)
@@ -79,6 +93,34 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
         progressBarRect.sizeDelta =
            new Vector2((maxAmmoBar.GetComponent<RectTransform>().rect.width - 20) / Settings.weaponInfo[weaponType].MaxAmmo * maxAmmo, progressBarRect.rect.height);
     }
+    public void UpdateAbilityIcon(Abilitys ability, double cooldown)
+    {
+        var abilityImage = registry.GetElement("Ability").GetComponent<Image>();
+        var abilityButton = registry.GetElement("AbilityButton").GetComponent<Button>();
+        var reloadImage = registry.GetElement("AbilityReload").GetComponent<Image>();
+        var reloadTime = registry.GetElement("AbilityReloadTime").GetComponent<Text>();
+
+        // Update sprite only if necessary
+        Sprite newSprite = GameAssets.Instance.abilitys[ability];
+        if (abilityImage.sprite != newSprite)
+        {
+            abilityImage.sprite = newSprite;
+            reloadImage.sprite = newSprite;
+        }
+
+        // Update button interactability
+        bool shouldBeInteractable = cooldown == 1f;
+        if (abilityButton.interactable != shouldBeInteractable)
+        {
+            abilityButton.interactable = shouldBeInteractable;
+            reloadTime.gameObject.SetActive(!shouldBeInteractable);
+        }
+
+        reloadTime.text = $"{Settings.abilityInfo[ability].Cooldown * (1-cooldown):F0}s";
+        // Update cooldown fill
+        reloadImage.fillAmount = (float)cooldown;
+    }
+
 
     //GpsMap
 
@@ -110,7 +152,7 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
 
         Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
 
-        if(x == 0 && y == 0)
+        if (x == 0 && y == 0)
         {
             registry.GetElement("Map").GetComponent<Image>().sprite = sprite;
         }
@@ -124,7 +166,7 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
     {
         registry.GetElement("Map").GetComponent<RectTransform>().localPosition = -(new Vector2(MapOffset.X, MapOffset.Y));
     }
-    public void PlaceMarker(MarkerType markerType, PlayerStatus status)
+    public void PlaceMarker(MarkerType markerType, PlayerStatus status, System.Numerics.Vector2 markerOffset)
     {
         GameObject markerContainer = registry.GetElement("Map").transform.Find("Markers").gameObject;
 
@@ -143,18 +185,24 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
                 break;
         }
 
-        if(markerContainer.transform.Find(status.name.ToString()) != null)
+        if (markerContainer.transform.Find(status.Id.ToString()) != null)
         {
             RemoveMarker(status);
         }
 
         GameObject marker = Instantiate(markerPrefab, markerContainer.transform);
-        marker.name = status.name.ToString();
+        marker.name = status.Id.ToString();
+        marker.GetComponent<RectTransform>().localPosition = new Vector2(markerOffset.X, markerOffset.Y);
+        marker.transform.Find("Health").GetComponent<Image>().fillAmount = status.health / 100f;
+        marker.transform.Find("Name").GetComponent<Text>().text = status.name.ToString();
+
+        Debug.LogWarning(markerContainer.transform.childCount);
+
     }
 
     public void RemoveMarker(PlayerStatus status)
     {
-        Destroy(registry.GetElement("Map").transform.Find("Markers").Find(status.name.ToString()).gameObject);
+        Destroy(registry.GetElement("Map").transform.Find("Markers").Find(status.Id.ToString()).gameObject);
     }
 
     //Extension
@@ -179,9 +227,9 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
 
     //Buttons
 
-    public void ActivateAbbility()
+    public void ActivateAbility()
     {
-        //gamePresenter.ActivateAbbility();
+        gamePresenter.ActivateAbility();
     }
 
     public void Quit()
@@ -195,5 +243,6 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
         gamePresenter.Dispose();
         gpsPresenter.Dispose();
     }
+
 
 }

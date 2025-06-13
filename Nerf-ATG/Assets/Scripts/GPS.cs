@@ -1,18 +1,17 @@
 using System;
-using UnityEditor.Build;
 
 public class GPS
 {
     public double Latitude { get; private set; }
     public double Longitude { get; private set; }
 
-    public GPS(double latitude, double longitude)
+    public GPS(double longitude, double latitude)
     {
         Latitude = latitude;
         Longitude = longitude;
     }
 
-    public static double CalculateDistance(GPSData gps1, GPSData gps2)
+    public static double CalculateDistance(GPS gps1, GPS gps2)
     {
         double dlon = gps2.Longitude - gps1.Longitude;
         double dlat = gps2.Latitude - gps1.Latitude;
@@ -24,7 +23,7 @@ public class GPS
         return distance;
     }
 
-    public static bool IsWithinRadius(GPSData location1, GPSData location2, float radius)
+    public static bool IsWithinRadius(GPS location1, GPS location2, float radius)
     {
         if (location1 == null || location2 == null)
             return false;

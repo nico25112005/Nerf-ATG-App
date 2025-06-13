@@ -5,7 +5,7 @@ public class WeaponPresenter
 {
     IWeaponView view;
     IPlayerModel playerModel;
-    
+
     public WeaponPresenter(IWeaponView view, IPlayerModel playerModel)
     {
         this.view = view;
@@ -15,7 +15,7 @@ public class WeaponPresenter
         this.playerModel.OnCoinsChanged += UpdateCoins;
         this.playerModel.OnWeaponTypeChanged += UpdateWeaponIcon;
 
-        if(view is IWeaponViewUnityExtension unityView)
+        if (view is IWeaponViewUnityExtension unityView)
         {
             unityView.UpdateTeam(playerModel.Team);
         }
@@ -25,7 +25,7 @@ public class WeaponPresenter
     {
         view.UpdateWeaponIcon(weaponType);
 
-        if(view is IWeaponViewUnityExtension unityView)
+        if (view is IWeaponViewUnityExtension unityView)
         {
             unityView.SetNextSceneActive(weaponType != WeaponType.None);
         }
@@ -48,11 +48,13 @@ public class WeaponPresenter
     public void NextScene()
     {
         playerModel.Coins -= Settings.weaponInfo[playerModel.WeaponType].Price;
+        playerModel.Ammo = Settings.weaponInfo[playerModel.WeaponType].AmmoPerMag;
+        playerModel.MaxAmmo = Settings.weaponInfo[playerModel.WeaponType].MaxAmmo;
     }
 
     public void Quit()
     {
-        
+
     }
 
     public void Dispose()

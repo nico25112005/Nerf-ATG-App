@@ -14,7 +14,6 @@ public class ProjectInstaller : ScriptableObjectInstaller<ProjectInstaller>
         Container.Bind<IServerModel>().To<ServerModel>().AsSingle();
 
         Container.Bind<ITcpClientService>().To<FakeTcpClientService>().AsSingle();
-        Container.Bind<IGpsDataService>().To<GpsDataService>().AsSingle();
-        Container.Bind<IGpsTileService>().To<GpsTileService>().AsSingle();
+        Container.Bind<IMainThreadExecutor>().To<MainThreadExecutor>().AsSingle();
     }
 }

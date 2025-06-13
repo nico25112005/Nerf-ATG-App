@@ -15,11 +15,13 @@ public class PlayerModel : IPlayerModel
     public event EventHandler<ushort> OnMaxAmmoChanged;
     public event EventHandler<GPS> OnLocationChanged;
 
+    public event EventHandler<Abilitys> AbilityActivated; 
+
     private PlayerModel()
     {
         Coins = Settings.Coins;
         WeaponType = WeaponType.None;
-        Team = Team.Violet;
+        Team = Team.Red;
 
         _upgrades = new Dictionary<UpgradeType, byte>
         { 
@@ -40,7 +42,15 @@ public class PlayerModel : IPlayerModel
         get => _health;
         set
         {
-            _health = value;
+            if(value <= (byte)(Settings.Health + Upgrades[UpgradeType.Health] * 15))
+            {
+                _health = value;
+            }
+            else
+            {
+                _health = (byte)(Settings.Health + Upgrades[UpgradeType.Health] * 15);
+            }
+
             OnHealthChanged?.Invoke(this, _health);
         }
     }
@@ -52,7 +62,15 @@ public class PlayerModel : IPlayerModel
     { get => _ammo;
         set
         {
-            _ammo = value;
+            if(value <= Settings.weaponInfo[WeaponType].AmmoPerMag)
+            {
+                _ammo = value;
+            }
+            else
+            {
+                _ammo = (byte)(Settings.weaponInfo[WeaponType].AmmoPerMag);
+            }
+
             OnAmmoChanged?.Invoke(this, _ammo);
         }
     }
@@ -63,7 +81,15 @@ public class PlayerModel : IPlayerModel
         get => _maxAmmo;
         set
         {
-            _maxAmmo = value;
+            if(value <= Settings.weaponInfo[WeaponType].MaxAmmo)
+            {
+                _maxAmmo = value;
+            }
+            else
+            {
+                _maxAmmo = Settings.weaponInfo[WeaponType].MaxAmmo;
+            }
+
             OnMaxAmmoChanged?.Invoke(this, _maxAmmo);
         }
     }
@@ -117,5 +143,10 @@ public class PlayerModel : IPlayerModel
     {
         _upgrades[upgradeType]++;
         OnUpgradesChanged?.Invoke(this, _upgrades);
+    }
+
+    public void ActivateAbility(Abilitys abilitys)
+    {
+        AbilityActivated?.Invoke(this, abilitys);
     }
 }

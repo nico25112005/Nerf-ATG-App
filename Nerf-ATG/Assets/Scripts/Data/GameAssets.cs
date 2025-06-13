@@ -25,8 +25,13 @@ public class GameAssets : MonoBehaviour
     public Sprite rifle;
     public Sprite empty;
 
+    public Sprite medkit;
+    public Sprite rapidfire;
+    public Sprite radar;
+
     public Dictionary<WeaponType, Sprite> weapons;
     public Dictionary<UpgradeType, Sprite> upgrades;
+    public Dictionary<Abilitys, Sprite> abilitys;
 
     private void Awake()
     {
@@ -44,6 +49,13 @@ public class GameAssets : MonoBehaviour
             {UpgradeType.Health, health},
             {UpgradeType.Healing, healing},
             {UpgradeType.Damping, damping}
+        };
+
+        abilitys = new()
+        {
+            {Abilitys.RapidFire, rapidfire},
+            {Abilitys.GPSLocate, radar},
+            {Abilitys.Healpackage, medkit}
         };
     }
 }

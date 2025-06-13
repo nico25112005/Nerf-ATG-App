@@ -142,6 +142,13 @@ namespace Game
             {WeaponType.Mp, new WeaponInfo(WeaponType.Mp, 9, 1, 0f, 300, 75, Abilitys.RapidFire, 3, 0.125f, 1)},
             {WeaponType.Rifle,new WeaponInfo(WeaponType.Rifle, 12, 3, 0.33f, 180, 45, Abilitys.Healpackage, 4, 1.5f, 4)}
         };
+
+        public static Dictionary<Abilitys, AbilityInfo> abilityInfo = new()
+        {
+            {Abilitys.RapidFire, new AbilityInfo(Abilitys.RapidFire, 240, "Rapid Fire: Fires twice as fast for 1 magazine")},
+            {Abilitys.GPSLocate, new AbilityInfo(Abilitys.GPSLocate, 5, "GPS Locate: Locates all enemy")},
+            {Abilitys.Healpackage, new AbilityInfo(Abilitys.Healpackage, 180, "Heal Package: Heals 50hp")}
+        };
     }
 }
 
@@ -155,7 +162,7 @@ namespace System.Runtime.CompilerServices
 }
 
 public record UpgradeInfo(UpgradeType Type, byte[] Price);
-public record WeaponInfo(WeaponType Type, byte Price, byte BulletsPerShot, float TimeAfterBullet, int MaxAmmo, byte AmmoPerMag, Abilitys Abilitys, float ReloadTime, float ShotTime, byte Damage);
-
+public record WeaponInfo(WeaponType Type, byte Price, byte BulletsPerShot, float TimeAfterBullet, ushort MaxAmmo, byte AmmoPerMag, Abilitys Ability, float ReloadTime, float ShotTime, byte Damage);
+public record AbilityInfo(Abilitys Type, float Cooldown, string Description);
 
 

@@ -1,11 +1,7 @@
-﻿using Game;
-using Game.Enums;
+﻿using Game.Enums;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.UI;
-using Zenject.SpaceFighter;
 
 // Definition of a record for upgrade information
 public class UpgradeShopItem : IShopItem<GameObject>
@@ -33,7 +29,7 @@ public class UpgradeShopItem : IShopItem<GameObject>
         // Update the progress bar length based on upgrade levels
         instance.transform.Find("ProgressbarBackground").Find("Progressbar").GetComponent<RectTransform>().sizeDelta =
             new Vector2(0, instance.transform.Find("ProgressbarBackground").Find("Progressbar").GetComponent<RectTransform>().rect.height); // Set progress bar to 0;
-    
+
     }
 }
 
@@ -63,7 +59,7 @@ public class WeaponShopItem : IShopItem<GameObject>
                             $"• Ammo Per Mag: {weaponInfo.AmmoPerMag}\n" +
                             $"• Reload Time: {weaponInfo.ReloadTime}\n" +
                             $"• Damage: {weaponInfo.Damage}\n" +
-                            $"• Ability: {weaponInfo.Abilitys}\n" +
+                            $"• Ability: {weaponInfo.Ability}\n" +
                             $"• Bullets/Shot: {weaponInfo.BulletsPerShot}\n" +
                             $"\n     --- Advanced ---\n" +
                             $"• Time After Bullet: {weaponInfo.TimeAfterBullet}\n" +

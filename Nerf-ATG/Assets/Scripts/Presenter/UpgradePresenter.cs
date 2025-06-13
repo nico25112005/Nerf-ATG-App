@@ -2,7 +2,6 @@
 using Game.Enums;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Timeline.Actions;
 
 public class UpgradePresenter
 {
@@ -16,7 +15,7 @@ public class UpgradePresenter
         this.view = view;
         this.playerModel = playerModel;
 
-        if(view is IUpgradeViewUnityExtension unityView)
+        if (view is IUpgradeViewUnityExtension unityView)
         {
             unityView.UpdateTeam(playerModel.Team);
             unityView.UpdateWeaponIcon(playerModel.WeaponType);
@@ -31,7 +30,7 @@ public class UpgradePresenter
     public void UpdateUpgradePrefab(object sender, Dictionary<UpgradeType, byte> upgrades)
     {
         view.UpdateUpgrades(upgrades);
-        
+
     }
 
     public void UpdateCoins(object sender, byte coins)
@@ -59,7 +58,7 @@ public class UpgradePresenter
 
     public void ResetUpgrades()
     {
-        foreach(UpgradeType upgrades in playerModel.Upgrades.Keys.ToList())
+        foreach (UpgradeType upgrades in playerModel.Upgrades.Keys.ToList())
         {
             playerModel.SetUpgrades(upgrades, 0);
         }
@@ -70,7 +69,7 @@ public class UpgradePresenter
     public void NextScene()
     {
         playerModel.Health = (byte)(Settings.Health + playerModel.Upgrades[UpgradeType.Health] * 15);
-        playerModel.Health = (byte)(Settings.Health + playerModel.Upgrades[UpgradeType.Health] * 2);
+        playerModel.Healing = (byte)(Settings.Health + playerModel.Upgrades[UpgradeType.Health] * 2);
     }
 
     public void Quit()

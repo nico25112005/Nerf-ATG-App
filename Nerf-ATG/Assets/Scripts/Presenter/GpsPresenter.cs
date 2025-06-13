@@ -1,6 +1,6 @@
 ﻿using Game.Enums;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Numerics;
 
 public class GpsPresenter
@@ -32,9 +32,14 @@ public class GpsPresenter
         this.gpsDataService = gpsDataService;
 
         gpsDataService.NewGpsData += NewGpsData;
-        playerModel.OnLocationChanged += UpdateGpsMap;
+
+        playerModel.OnLocationChanged += RequestGpsMap;
+        playerModel.AbilityActivated += RadarAbility;
+
         gameModel.onPlayerStatusChanged += UpdateMarkers;
         gameModel.onPlayerStatusRemoved += RemoveMarker;
+
+        gpsTileService.OnTileDataReceived += UpdateGpsMap;
 
         gpsDataService.StartGps();
 
@@ -44,47 +49,66 @@ public class GpsPresenter
 
     public void NewGpsData(object sender, GPS gpsData)
     {
-        if(gpsData != null && gpsData != playerModel.Location)
+        if (gpsData != null && gpsData != playerModel.Location)
         {
             playerModel.Location = gpsData;
+
         }
     }
 
     //GpsMap
-    public void UpdateGpsMap(object sender, GPS gpsData)
+    public void RequestGpsMap(object sender, GPS gpsData)
     {
-        if(gpsTileService.GpsToTileCoordinates(gpsData) != currentTile)
+
+        Vector2 newTileCoordinates = gpsTileService.GpsToTileCoordinates(gpsData);
+        if (newTileCoordinates != currentTile)
         {
-            for(sbyte x = -1 ; x <= 1; x++)
+            currentTile = newTileCoordinates;
+
+
+            for (sbyte x = -1; x <= 1; x++)
             {
-                for(sbyte y = -1; y <= 1; y++)
+                for (sbyte y = -1; y <= 1; y++)
                 {
-                    gpsMap.UpdateTile(x, y, gpsTileService.GetTile(gpsData, x, y));
+                    gpsTileService.RequestTile(gpsData, x, y);
                 }
+            }
+
+            foreach(PlayerStatus playerStatus in gameModel.playerStatus.Values)
+            {
+                UpdateMarkers(null, playerStatus);
             }
         }
 
-        gpsMap.UpdateMapLocation(gpsTileService.GpsToTilePosition(playerModel.Location, gpsData));
+        gpsMap.UpdateMapLocation(gpsTileService.GpsToTilePosition(currentTile, gpsData));
+    }
+
+    public void UpdateGpsMap(byte[] tileData, sbyte x, sbyte y)
+    {
+        gpsMap.UpdateTile(x,y, tileData);
     }
 
     public void UpdateMarkers(object sender, PlayerStatus playerStatus)
     {
         MarkerType type;
+        UnityEngine.Debug.Log("Presenter: " + playerStatus);
 
-        if(playerStatus.teamIndex == (int)playerModel.Team)
+        if (playerStatus.teamIndex == (int)playerModel.Team)
         {
             type = MarkerType.Allie;
         }
-        else if(playerStatus.teamIndex >= 10)
+        else if (playerStatus.teamIndex >= 10)
         {
-            type = (MarkerType)((int)playerStatus.teamIndex / 10 + 1);
+            type = (MarkerType)(playerStatus.teamIndex / 10 + 1);
         }
         else
         {
             type = MarkerType.Enemy;
         }
 
-        gpsMap.PlaceMarker(type, playerStatus);
+        UnityEngine.Debug.Log(playerStatus.name + ": MarkerType: " + type);
+
+        gpsMap.PlaceMarker(type, playerStatus, gpsTileService.GpsToTilePosition(currentTile, new GPS(playerStatus.longitude, playerStatus.latitude)));
 
     }
 
@@ -95,11 +119,25 @@ public class GpsPresenter
     }
 
 
+    public void RadarAbility(object sender, Abilitys ability)
+    {
+        if(ability == Abilitys.GPSLocate)
+        {
+            foreach (PlayerStatus playerStatus in gameModel.playerStatus.Values)
+            {
+                UpdateMarkers("Radar", playerStatus);
+            }
+        }
+    }
+
+
     public void Dispose()
     {
         gpsDataService.StopGps();
         gpsDataService.NewGpsData -= NewGpsData;
-        playerModel.OnLocationChanged -= UpdateGpsMap;
+        playerModel.OnLocationChanged -= RequestGpsMap;
+        playerModel.AbilityActivated -= RadarAbility;
+
         gameModel.onPlayerStatusChanged -= UpdateMarkers;
     }
 }

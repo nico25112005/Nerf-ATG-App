@@ -51,4 +51,7 @@ MonoBehaviour:
   sniper: {fileID: 21300000, guid: 642296426ea90bc4e8477a86cd736074, type: 3}
   mp: {fileID: 21300000, guid: de9c2e1e217eef44dbf5dfeee6731126, type: 3}
   rifle: {fileID: 21300000, guid: 7e53080c3997c0041a98d3dd478625c9, type: 3}
-  epmty: {fileID: 21300000, guid: 3ccc9beed25d89344b558c661463d8e1, type: 3}
+  empty: {fileID: 21300000, guid: 3ccc9beed25d89344b558c661463d8e1, type: 3}
+  medkit: {fileID: 21300000, guid: 386e945417989a745af8c6957606c83b, type: 3}
+  rapidfire: {fileID: 21300000, guid: cc73a4e74461a834d8a931e62a3a40ce, type: 3}
+  radar: {fileID: 21300000, guid: bdc0e1d9b28c4d24c8aad637743f4470, type: 3}
