@@ -5,7 +5,7 @@ using System.Text;
 
 public class ActiveAbility : Packet<ClientPacketType>
 {
-    private string playerId;
+    public string playerId { get; private set; }
 
     public ActiveAbility(byte[] bytes) : base(bytes, ClientPacketType.ActiveAbility) { }
 
@@ -16,21 +16,17 @@ public class ActiveAbility : Packet<ClientPacketType>
 
     public override void FromBytes(byte[] bytes)
     {
-        playerId = Encoding.UTF8.GetString(bytes, 0, 12).TrimEnd('\0');
+        playerId = Encoding.UTF8.GetString(bytes, 4, 8);
     }
 
     public override void ToBytes(byte[] bytes)
     {
-        Array.Copy(Encoding.UTF8.GetBytes(playerId.PadRight(12, '\0')), 0, bytes, 0, 12);
-    }
-
-    public string GetPlayerId()
-    {
-        return playerId;
+        bytes[0] = (byte)GetType();
+        Array.Copy(Encoding.UTF8.GetBytes(playerId), 0, bytes, 4, 8);
     }
 
     public override string ToString()
     {
-        return $"ActiveAbility{{playerId='{playerId}'}}";
+        return $"ActiveAbility: {{playerId='{playerId}'}}\nType: {this.GetType()}";
     }
 }

@@ -1,33 +1,29 @@
-﻿using System;
+﻿using Game.Enums;
+using System;
 using System.Text;
 
 
 public class PlayerDeath : Packet<ClientPacketType>
 {
-    private string playerId;
-    
+    public string playerId { get; private set; }
 
-    public PlayerDeath(byte[] bytes) : base(bytes, ClientPacketType.AppStarted) { }
+    public PlayerDeath(byte[] bytes) : base(bytes, ClientPacketType.PlayerDeath) { }
 
-    public PlayerDeath(string playerId) : base(ClientPacketType.AppStarted)
+    public PlayerDeath(string playerId) : base(ClientPacketType.PlayerDeath)
     {
         this.playerId = playerId;
     }
 
     public override void FromBytes(byte[] bytes)
     {
-        playerId = Encoding.UTF8.GetString(bytes, 0, 12).TrimEnd('\0');
+        playerId = Encoding.UTF8.GetString(bytes, 4, 8);
     }
 
     public override void ToBytes(byte[] bytes)
     {
-        Array.Copy(Encoding.UTF8.GetBytes(playerId.PadRight(12, '\0')), 0, bytes, 0, 12);
+        bytes[0] = (byte)GetType();
 
-    }
-
-    public string GetPlayerId()
-    {
-        return playerId;
+        Array.Copy(Encoding.UTF8.GetBytes(playerId), 0, bytes, 4, 8);
     }
 
     public override string ToString()

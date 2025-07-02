@@ -106,7 +106,7 @@ public class GpsPresenter
             type = MarkerType.Enemy;
         }
 
-        UnityEngine.Debug.Log(playerStatus.name + ": MarkerType: " + type);
+        UnityEngine.Debug.Log(playerStatus.playerName + ": MarkerType: " + type);
 
         gpsMap.PlaceMarker(type, playerStatus, gpsTileService.GpsToTilePosition(currentTile, new GPS(playerStatus.longitude, playerStatus.latitude)));
 

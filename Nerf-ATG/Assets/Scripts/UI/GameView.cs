@@ -194,7 +194,7 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
         marker.name = status.Id.ToString();
         marker.GetComponent<RectTransform>().localPosition = new Vector2(markerOffset.X, markerOffset.Y);
         marker.transform.Find("Health").GetComponent<Image>().fillAmount = status.health / 100f;
-        marker.transform.Find("Name").GetComponent<Text>().text = status.name.ToString();
+        marker.transform.Find("Name").GetComponent<Text>().text = status.playerName.ToString();
 
         Debug.LogWarning(markerContainer.transform.childCount);
 

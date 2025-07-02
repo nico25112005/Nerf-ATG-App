@@ -29,7 +29,9 @@ public enum ServerPacketType
      */
     GameStarted,
     /*
-    UUID targetID
+    UUID leaderID
+    string leaderName
+    byte playerCount
     */
     GpsInfo,
     /*
