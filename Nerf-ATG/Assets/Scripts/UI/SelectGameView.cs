@@ -53,7 +53,7 @@ public class SelectGameView : MonoBehaviour, ISelectGameView
             GameObject prefabInstance = Instantiate(registry.GetElement("GamePrefab"), registry.GetElement("GameList").transform);
             prefabInstance.transform.Find("DeviceName").GetComponent<Text>().text = gameInfo.gameName;
             prefabInstance.transform.Find("Playercount").GetComponent<Text>().text = $"{gameInfo.playerCount}/{gameInfo.maxPlayer}";
-            prefabInstance.transform.Find("Gamemode").GetComponent<Text>().text = gameInfo.gameType.ToAbbreviation();
+            prefabInstance.transform.Find("Gamemode").GetComponent<Text>().text = ((GameType)gameInfo.gameType).ToAbbreviation();
             prefabInstance.GetComponent<Button>().onClick.AddListener(() => ButtonClick(prefabInstance.GetComponentInChildren<Text>()));
 
             void ButtonClick(Text game)

@@ -54,7 +54,7 @@ public class GameMemberPresenter
 
     public void SwitchTeam(string playerId)
     {
-        if(gameModel.gameInfo.gameType == GameType.TeamDeathMatch)
+        if((GameType)gameModel.gameInfo.gameType == GameType.TeamDeathMatch)
         {
             tcpClientService.Send(ITcpClientService.Connections.Server, new SwitchTeam(playerId));
         }

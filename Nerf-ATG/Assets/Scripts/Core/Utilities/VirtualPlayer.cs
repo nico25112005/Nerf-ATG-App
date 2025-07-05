@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Game.Enums;
+using System;
 using System.Numerics;
 using System.Timers;
 
@@ -81,7 +82,7 @@ public class VirtualPlayer
         if (health > 100) health = 100;
         if (health < 0) health = 0;
 
-        PlayerStatus playerStatus = new PlayerStatus(id.ToString(), name, teamindex, lastGps.Longitude, lastGps.Latitude, (byte)health);
+        PlayerStatus playerStatus = new PlayerStatus(id.ToString(), name, (Team)teamindex, lastGps.Longitude, lastGps.Latitude, (byte)health);
 
         mainThreadExecutor.Execute(() => gameModel.UpdatePlayerStatus(playerStatus));
     }

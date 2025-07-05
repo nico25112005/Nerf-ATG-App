@@ -185,13 +185,13 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
                 break;
         }
 
-        if (markerContainer.transform.Find(status.Id.ToString()) != null)
+        if (markerContainer.transform.Find(status.playerId) != null)
         {
             RemoveMarker(status);
         }
 
         GameObject marker = Instantiate(markerPrefab, markerContainer.transform);
-        marker.name = status.Id.ToString();
+        marker.name = status.playerId;
         marker.GetComponent<RectTransform>().localPosition = new Vector2(markerOffset.X, markerOffset.Y);
         marker.transform.Find("Health").GetComponent<Image>().fillAmount = status.health / 100f;
         marker.transform.Find("Name").GetComponent<Text>().text = status.playerName.ToString();
@@ -202,7 +202,7 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
 
     public void RemoveMarker(PlayerStatus status)
     {
-        Destroy(registry.GetElement("Map").transform.Find("Markers").Find(status.Id.ToString()).gameObject);
+        Destroy(registry.GetElement("Map").transform.Find("Markers").Find(status.playerId).gameObject);
     }
 
     //Extension

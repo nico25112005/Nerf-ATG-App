@@ -51,7 +51,7 @@ public class GameModel : IGameModel
     public IReadOnlyDictionary<string, PlayerStatus> playerStatus => _playerStatus;
     public void UpdatePlayerStatus(PlayerStatus status)
     {
-        _playerStatus[status.Id] = status;
+        _playerStatus[status.playerId] = status;
         onPlayerStatusChanged?.Invoke(this, status);
     }
 

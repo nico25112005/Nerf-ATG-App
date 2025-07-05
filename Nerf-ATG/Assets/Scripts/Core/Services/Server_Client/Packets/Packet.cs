@@ -18,7 +18,7 @@ public abstract class Packet<T> where T : Enum
         this.type = type;
     }
 
-    public T GetType()
+    public new T GetType()
     {
         return type;
     }
