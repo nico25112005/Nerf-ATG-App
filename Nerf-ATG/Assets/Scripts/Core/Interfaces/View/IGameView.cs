@@ -6,4 +6,9 @@ public interface IGameView
     void UpdateAmmoBar(WeaponType weaponType, byte ammo);
     void UpdateMaxAmmoBar(WeaponType weaponType, ushort maxAmmo);
     void UpdateAbilityIcon(Abilitys ability, double cooldown);
+    void DeactivateInformationPanel();
+    void SetBaseInformationText(string text);
+    void SetBaseLocationButtonVisable();
+
+
 }

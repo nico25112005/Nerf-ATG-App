@@ -32,6 +32,6 @@ public interface IPlayerModel
 
     GPS Location { get; set; }
 
-
     void ActivateAbility(Abilitys ability);
+    bool AbilityActive { get; set; }
 }

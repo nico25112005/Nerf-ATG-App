@@ -32,10 +32,10 @@ public class PlayerModel : IPlayerModel
         };
     }
 
-    // Properties
     public string Name { get; set; } = "";
     public Guid Id { get;} = Guid.NewGuid();
 
+    // Health
     private byte _health;
     public byte Health
     {
@@ -55,8 +55,11 @@ public class PlayerModel : IPlayerModel
         }
     }
 
+    // Healing
     public byte Healing { get; set; }
 
+
+    // Ammo
     private byte _ammo;
     public byte Ammo
     { get => _ammo;
@@ -75,6 +78,7 @@ public class PlayerModel : IPlayerModel
         }
     }
 
+    // Max Ammo
     private ushort _maxAmmo;
     public ushort MaxAmmo 
     {
@@ -93,7 +97,10 @@ public class PlayerModel : IPlayerModel
             OnMaxAmmoChanged?.Invoke(this, _maxAmmo);
         }
     }
+    
 
+
+    // Location
     private GPS _location;
     public GPS Location
     {
@@ -105,8 +112,12 @@ public class PlayerModel : IPlayerModel
         }
     }
 
+
+    // Team
     public Team Team { get; set; }
 
+
+    // Weapon
     private WeaponType _weaponType;
     public WeaponType WeaponType
     {
@@ -118,6 +129,7 @@ public class PlayerModel : IPlayerModel
         }
     }
 
+    // Coins
 
     private byte _coins;
     public byte Coins {
@@ -130,8 +142,11 @@ public class PlayerModel : IPlayerModel
     
     }
 
+    // Upgrades
+
     Dictionary<UpgradeType, byte> _upgrades;
     public IReadOnlyDictionary<UpgradeType, byte> Upgrades => _upgrades;
+
 
     public void SetUpgrades(UpgradeType upgradeType, byte amount)
     {
@@ -145,8 +160,11 @@ public class PlayerModel : IPlayerModel
         OnUpgradesChanged?.Invoke(this, _upgrades);
     }
 
+
+    // Abilities
     public void ActivateAbility(Abilitys abilitys)
     {
         AbilityActivated?.Invoke(this, abilitys);
     }
+    public bool AbilityActive { get; set; }
 }

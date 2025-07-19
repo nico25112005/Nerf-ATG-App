@@ -39,7 +39,7 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
     }
 
 
-    public void UpdateMemberList(List<PlayerInfo> gameMembers)
+    public void UpdateMemberList(List<IPlayerInfo> gameMembers) //Todo: refactor to do it without handing over the whole list
     {
         foreach (Transform child in registry.GetElement("GameMemberList").transform)
         {
@@ -49,11 +49,11 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
         foreach (PlayerInfo gameMember in gameMembers)
         {
             GameObject prefabInstance = Instantiate(registry.GetElement("GameMemberPrefab"), registry.GetElement("GameMemberList").transform);
-            prefabInstance.transform.Find("MemberName").GetComponent<Text>().text = gameMember.playerName;
+            prefabInstance.transform.Find("MemberName").GetComponent<Text>().text = gameMember.Name;
 
             Color32 teamcolor;
 
-            switch (gameMember.teamIndex)
+            switch (gameMember.Index)
             {
                 case 0:
                     teamcolor = new Color32(146, 0, 197, 255);
@@ -70,12 +70,13 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
             }
 
             prefabInstance.transform.Find("MemberTeam").GetComponent<Image>().color = teamcolor;
+
             if (!_isHost)
                 prefabInstance.transform.Find("MemberTeam").GetComponent<Button>().interactable = false;
             prefabInstance.transform.Find("MemberTeam").GetComponent<Button>().onClick.AddListener(() => ButtonClick(gameMember));
             void ButtonClick(PlayerInfo playerInfo)
             {
-                presenter.SwitchTeam(playerInfo.playerId.ToString());
+                presenter.SwitchTeam(playerInfo.PlayerId.ToString());
             }
         }
 

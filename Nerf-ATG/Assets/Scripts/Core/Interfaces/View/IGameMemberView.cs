@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public interface IGameMemberView
 {
-    void UpdateMemberList(List<PlayerInfo> gameMembers);
+    void UpdateMemberList(List<IPlayerInfo> gameMembers);
 
     void ActivateHostPanel();
 

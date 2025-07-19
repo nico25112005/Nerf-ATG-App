@@ -1,29 +1,38 @@
-﻿using System;
+﻿using Game.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 
 public interface IGameModel
 {
-    event EventHandler<List<PlayerInfo>> onPlayersChanged;
     event EventHandler<EventArgs> onGameStart;
-    event EventHandler<PlayerStatus> onPlayerStatusChanged;
-    event EventHandler<PlayerStatus> onPlayerStatusRemoved;
-
-    IEnumerable<PlayerInfo> players { get; }
-    void AddPlayer(PlayerInfo playerInfo);
-
-    void RemovePlayer(PlayerInfo playerInfo);
+    event EventHandler<IPlayerInfo> onPlayerInfoChanged;
+    event EventHandler<byte> onReadyPlayerCountChanged;
+    event EventHandler<EventArgs> onNewBaseLocation;
+    event EventHandler<IMapPoint> onMapPointChanged;
+    byte readyPlayerCount { get; set; }
 
     GameInfo gameInfo { get; set; }
 
     void GameStart();
 
-    IReadOnlyDictionary<string, PlayerStatus> playerStatus { get; }
+    IReadOnlyDictionary<string, IPlayerInfo> playerInfo { get; }
 
-    void UpdatePlayerStatus(PlayerStatus playerStatus);
-    void RemovePlayerStatus(string playerID);
+    void UpdatePlayerInfo(IPlayerInfo playerInfo);
+    void RemovePlayerInfo(string playerID);
+
+    Dictionary<Team, (string, string)> teamLeader { get; set; }
+    IReadOnlyDictionary<Team, GPS> baseLocation { get; }
+
+    void AddBaseLocation(Team team, GPS gps);
+
+    IReadOnlyDictionary<string, IMapPoint> mapPoints { get; }
+
+    void UpdateMapPoints(IMapPoint mapPoint);
+    void RemoveMapPoint(string Name);
 
 }
 

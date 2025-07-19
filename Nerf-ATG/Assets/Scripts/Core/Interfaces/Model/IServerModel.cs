@@ -10,8 +10,9 @@ public interface IServerModel
     event EventHandler<List<GameInfo>> onActiveGamesChanged;
     IEnumerable<GameInfo> ActiveGames { get; }
 
-    void addActiveGame(GameInfo gameInfo);
-    void removeActiveGame(GameInfo gameInfo);
+    void UpdateActiveGame(GameInfo gameInfo);
+    void AddActiveGame(GameInfo gameInfo);
+    void RemoveActiveGame(GameInfo gameInfo);
 
 }
 

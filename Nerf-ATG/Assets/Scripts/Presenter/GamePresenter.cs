@@ -1,24 +1,22 @@
 ﻿using Game;
 using Game.Enums;
 using System;
+using System.Linq;
 using System.Timers;
+
 public class GamePresenter
 {
-
     private Timer timer;
     private float elapsedTime = 0;
-    float cooldown = 0;
+    private float cooldown = 0;
 
+    private readonly IGameView view;
 
-    IGameView view;
+    private readonly IPlayerModel playerModel;
+    private readonly IGameModel gameModel;
 
-    IPlayerModel playerModel;
-    IGameModel gameModel;
-
-    ITcpClientService tcpClientService;
-    IMainThreadExecutor mainThreadExecutor;
-
-
+    private readonly ITcpClientService tcpClientService;
+    private readonly IMainThreadExecutor mainThreadExecutor;
 
     public GamePresenter(IGameView view, IPlayerModel playerModel, IGameModel gameModel, ITcpClientService tcpClientService, IMainThreadExecutor mainThreadExecutor)
     {
@@ -35,8 +33,10 @@ public class GamePresenter
         playerModel.OnMaxAmmoChanged += UpdateMaxAmmoBar;
         playerModel.AbilityActivated += HealthPackageAbility;
         playerModel.AbilityActivated += RapidFireAbility;
+        playerModel.OnLocationChanged += SetBaseLocationButtonActive;
 
-        playerModel.WeaponType = WeaponType.Sniper;
+        gameModel.onReadyPlayerCountChanged += UpdateReadyPlayerCount;
+        gameModel.onNewBaseLocation += NewBaseSet;
 
         if (view is IGameViewUnityExtension unityView)
         {
@@ -51,7 +51,6 @@ public class GamePresenter
         playerModel.MaxAmmo += 0;
 
         playerModel.Health -= 110;
-
     }
 
     public void UpdateHealthBar(object sender, byte health)
@@ -69,6 +68,49 @@ public class GamePresenter
         view.UpdateMaxAmmoBar(playerModel.WeaponType, maxAmmo);
     }
 
+    public void SetBaseLocationButtonActive(object sender, GPS gps)
+    {
+        if (gameModel.readyPlayerCount == gameModel.playerInfo.Count())
+        {
+            view.SetBaseLocationButtonVisable();
+            playerModel.OnLocationChanged -= SetBaseLocationButtonActive;
+        }
+    }
+
+    public void NewBaseSet(object sender, EventArgs e)
+    {
+        view.SetBaseInformationText($"Your Teamleader is: {gameModel.teamLeader[playerModel.Team]}" +
+                   $"Waiting for the teamleaders to set their base: {gameModel.baseLocation.Count()}/{gameModel.teamLeader.Count()} " +
+                   $"Within a radius of {Game.Settings.BaseRadius} around your base, you can heal and replenish your ammunition.");
+
+        if (gameModel.baseLocation.Count() == gameModel.teamLeader.Count())
+        {
+            view.DeactivateInformationPanel();
+            gameModel.onNewBaseLocation -= NewBaseSet;
+        }
+    }
+
+    public void UpdateReadyPlayerCount(object sender, byte readyPlayerCount)
+    {
+        if (readyPlayerCount > gameModel.playerInfo.Count())
+        {
+            view.SetBaseInformationText($"Waiting for all players to get ready\n\n Ready: {gameModel.readyPlayerCount}/{gameModel.playerInfo.Count()}");
+        }
+        else
+        {
+            if (string.Equals(gameModel.teamLeader[playerModel.Team].Item1, playerModel.Id.ToString()))
+            {
+                view.SetBaseInformationText($"Please go to a place where you would like to set the base for your team." +
+                    $"You can then heal yourself and replenish your ammunition within a radius of {Game.Settings.BaseRadius} around your base.");
+            }
+            else
+            {
+                view.SetBaseInformationText($"Your Teamleader is: {gameModel.teamLeader[playerModel.Team]}" +
+                    $"Waiting for the teamleaders to set their base: 0/{gameModel.teamLeader.Count()} " +
+                    $"Within a radius of {Game.Settings.BaseRadius} around your base, you can heal and replenish your ammunition.");
+            }
+        }
+    }
 
     // buttons
 
@@ -77,9 +119,8 @@ public class GamePresenter
         var ability = Settings.weaponInfo[playerModel.WeaponType].Ability;
 
         view.UpdateAbilityIcon(ability, 0);
-        
-        playerModel.ActivateAbility(ability);
 
+        playerModel.ActivateAbility(ability);
 
         cooldown = Settings.abilityInfo[ability].Cooldown;
         elapsedTime = 0f;
@@ -106,7 +147,7 @@ public class GamePresenter
 
     public void HealthPackageAbility(object sender, Abilitys ability)
     {
-        if(ability == Abilitys.Healpackage)
+        if (ability == Abilitys.Healpackage)
         {
             playerModel.Health += 50;
         }
@@ -114,28 +155,26 @@ public class GamePresenter
 
     public void RapidFireAbility(object sender, Abilitys ability)
     {
-        if(ability == Abilitys.RapidFire)
+        if (ability == Abilitys.RapidFire)
         {
             //Todo: TcpClient to esp32
         }
     }
 
+    private int count = 0;
 
-    int count = 0;
     public void Quit()
     {
-        new VirtualPlayer(playerModel.Location, gameModel, mainThreadExecutor, 15, $"Player_{++count}");
+        new VirtualPlayer(playerModel.Location, tcpClientService, mainThreadExecutor, 15, $"Player_{++count}");
     }
 
     public void Dispose()
     {
-
         playerModel.OnHealthChanged -= UpdateHealthBar;
         playerModel.OnAmmoChanged -= UpdateAmmoBar;
         playerModel.OnMaxAmmoChanged -= UpdateMaxAmmoBar;
         playerModel.AbilityActivated -= HealthPackageAbility;
         playerModel.AbilityActivated -= RapidFireAbility;
-
 
         if (timer != null)
         {

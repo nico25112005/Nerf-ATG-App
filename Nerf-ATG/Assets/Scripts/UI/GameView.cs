@@ -1,11 +1,10 @@
 using Game;
 using Game.Enums;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
-
-
 
 public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtension
 {
@@ -19,19 +18,20 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
 
     [Inject]
     private IPlayerModel playerModel;
+
     [Inject]
     private IGameModel gameModel;
+
     [Inject]
     private ITcpClientService tcpClientService;
+
     [Inject]
     private IMainThreadExecutor mainThreadExecutor;
 
     private IGpsTileService gpsTileService;
     private IGpsDataService gpsDataService;
 
-
-    GameObject[,] maptiles = new GameObject[3, 3];
-
+    private GameObject[,] maptiles = new GameObject[3, 3];
 
     private void Awake()
     {
@@ -46,7 +46,7 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
 
         gpsDataService = GpsDataService.Instance;
 
-        if(GpsTileService.Instance == null)
+        if (GpsTileService.Instance == null)
         {
             new GameObject("GpsTileService").AddComponent<GpsTileService>();
         }
@@ -57,11 +57,10 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
 
         gamePresenter = new GamePresenter(this, playerModel, gameModel, tcpClientService, mainThreadExecutor);
 
-        gpsPresenter = new GpsPresenter(this, playerModel, gameModel, gpsTileService, gpsDataService, tcpClientService);
+        gpsPresenter = new GpsPresenter(this, playerModel, gameModel, gpsTileService, gpsDataService, tcpClientService, mainThreadExecutor);
 
         InitMapPrefabs();
     }
-
 
     //View
     public void UpdateAmmoBar(WeaponType weaponType, byte ammo)
@@ -93,6 +92,7 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
         progressBarRect.sizeDelta =
            new Vector2((maxAmmoBar.GetComponent<RectTransform>().rect.width - 20) / Settings.weaponInfo[weaponType].MaxAmmo * maxAmmo, progressBarRect.rect.height);
     }
+
     public void UpdateAbilityIcon(Abilitys ability, double cooldown)
     {
         var abilityImage = registry.GetElement("Ability").GetComponent<Image>();
@@ -116,11 +116,10 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
             reloadTime.gameObject.SetActive(!shouldBeInteractable);
         }
 
-        reloadTime.text = $"{Settings.abilityInfo[ability].Cooldown * (1-cooldown):F0}s";
+        reloadTime.text = $"{Settings.abilityInfo[ability].Cooldown * (1 - cooldown):F0}s";
         // Update cooldown fill
         reloadImage.fillAmount = (float)cooldown;
     }
-
 
     //GpsMap
 
@@ -166,44 +165,53 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
     {
         registry.GetElement("Map").GetComponent<RectTransform>().localPosition = -(new Vector2(MapOffset.X, MapOffset.Y));
     }
-    public void PlaceMarker(MarkerType markerType, PlayerStatus status, System.Numerics.Vector2 markerOffset)
+
+    public void UpdateMapPoints(MapPointType mapPointType, IMapPoint mapPoint, System.Numerics.Vector2 markerOffset)
     {
-        GameObject markerContainer = registry.GetElement("Map").transform.Find("Markers").gameObject;
-
-        GameObject markerPrefab = default(GameObject);
-
-        switch (markerType)
+        GameObject markerPrefab = mapPointType switch
         {
-            case MarkerType.Enemy:
-                markerPrefab = registry.GetElement("EnemyMarkerPrefab");
+            MapPointType.Enemy => registry.GetElement("EnemyMarkerPrefab"),
+            MapPointType.Allie => registry.GetElement("AllieMarkerPrefab"),
+            MapPointType.Base => registry.GetElement("SpawnMarkerPrefab"),
+            _ => throw new ArgumentOutOfRangeException(nameof(mapPointType), mapPointType, null)
+        };
+
+        switch (mapPoint.Action)
+        {
+            case PacketAction.Add:
+                AddMapPoint(mapPoint, markerPrefab, markerOffset);
                 break;
-            case MarkerType.Allie:
-                markerPrefab = registry.GetElement("AllieMarkerPrefab");
+
+            case PacketAction.Remove:
+                RemoveMapPoint(mapPoint.Name);
                 break;
-            case MarkerType.Base:
-                markerPrefab = registry.GetElement("SpawnMarkerPrefab");
+
+            case PacketAction.Update:
+                RemoveMapPoint(mapPoint.Name);
+                AddMapPoint(mapPoint, markerPrefab, markerOffset);
                 break;
         }
 
-        if (markerContainer.transform.Find(status.playerId) != null)
-        {
-            RemoveMarker(status);
-        }
+    }
 
-        GameObject marker = Instantiate(markerPrefab, markerContainer.transform);
-        marker.name = status.playerId;
+    private void AddMapPoint(IMapPoint mapPoint, GameObject markerPrefab, System.Numerics.Vector2 markerOffset)
+    {
+        GameObject marker = Instantiate(markerPrefab, registry.GetElement("Map").transform.Find("Markers"));
+        marker.name = mapPoint.Name;
         marker.GetComponent<RectTransform>().localPosition = new Vector2(markerOffset.X, markerOffset.Y);
-        marker.transform.Find("Health").GetComponent<Image>().fillAmount = status.health / 100f;
-        marker.transform.Find("Name").GetComponent<Text>().text = status.playerName.ToString();
 
-        Debug.LogWarning(markerContainer.transform.childCount);
-
+        if (mapPoint is PlayerStatus player)
+        {
+            marker.transform.Find("Health").GetComponent<Image>().fillAmount = player.Health / 100f;
+            marker.transform.Find("Name").GetComponent<Text>().text = player.Name;
+        }
     }
 
-    public void RemoveMarker(PlayerStatus status)
+    private void RemoveMapPoint(string name)
     {
-        Destroy(registry.GetElement("Map").transform.Find("Markers").Find(status.playerId).gameObject);
+        Destroy(registry.GetElement("Map").transform.Find("Markers").Find(name).gameObject);
     }
+
 
     //Extension
     public void UpdateTeam(Team team)
@@ -225,6 +233,21 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
         registry.GetElement("Stats").GetComponent<Text>().text = result;
     }
 
+    public void DeactivateInformationPanel()
+    {
+        registry.GetElement("InformationPanel").gameObject.SetActive(false);
+    }
+
+    public void SetBaseLocationButtonVisable()
+    {
+        registry.GetElement("SetBaseLocationButton").gameObject.SetActive(true);
+    }
+
+    public void SetBaseInformationText(string text)
+    {
+        registry.GetElement("SetBaseInformation").GetComponent<Text>().text = text;
+    }
+
     //Buttons
 
     public void ActivateAbility()
@@ -232,17 +255,20 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
         gamePresenter.ActivateAbility();
     }
 
+    public void SetBaseLocation()
+    {
+        gpsPresenter.SetBaseLocation();
+        registry.GetElement("SetBaseLocationButton").gameObject.SetActive(false);
+    }
+
     public void Quit()
     {
         gamePresenter.Quit();
     }
-
 
     private void OnDestroy()
     {
         gamePresenter.Dispose();
         gpsPresenter.Dispose();
     }
-
-
 }

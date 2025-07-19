@@ -1,21 +1,40 @@
-﻿
-
+﻿using Game.Enums;
 using System;
 using System.Collections.Generic;
 
 public class GameModel : IGameModel
 {
     public event EventHandler<List<PlayerInfo>> onPlayersChanged;
+
     public event EventHandler<EventArgs> onGameStart;
-    public event EventHandler<PlayerStatus> onPlayerStatusChanged;
-    public event EventHandler<PlayerStatus> onPlayerStatusRemoved;
 
-    public List<PlayerInfo> _players = new();
+    public event EventHandler<IPlayerInfo> onPlayerInfoChanged;
 
-    public IEnumerable<PlayerInfo> players => _players;
+    public event EventHandler<byte> onReadyPlayerCountChanged;
 
+    public event EventHandler<EventArgs> onNewBaseLocation;
+
+    public event EventHandler<IMapPoint> onMapPointChanged;
+
+    private byte _readPlayerCount;
+
+    public byte readyPlayerCount
+    {
+        get => _readPlayerCount;
+        set
+        {
+            _readPlayerCount = value;
+            onReadyPlayerCountChanged?.Invoke(this, value);
+        }
+    }
+
+    public void GameStart()
+    {
+        onGameStart?.Invoke(this, EventArgs.Empty);
+    }
 
     private GameInfo _gameInfo;
+
     public GameInfo gameInfo
     {
         get => _gameInfo;
@@ -28,36 +47,57 @@ public class GameModel : IGameModel
         }
     }
 
+    //Base & Teamleader
+    public Dictionary<Team, (string, string)> teamLeader { get; set; }
 
-    public void AddPlayer(PlayerInfo playerInfo)
+    private Dictionary<Team, GPS> _baseLocation = new();
+    public IReadOnlyDictionary<Team, GPS> baseLocation => _baseLocation;
+
+    public void AddBaseLocation(Team team, GPS gps)
     {
-        _players.Add(playerInfo);
-        onPlayersChanged?.Invoke(this, _players);
+        _baseLocation.TryAdd(team, gps);
+        onNewBaseLocation?.Invoke(this, EventArgs.Empty);
     }
 
-    public void RemovePlayer(PlayerInfo playerInfo)
+    //PlayerInfo
+    private Dictionary<string, IPlayerInfo> _playerInfo = new();
+
+    public IReadOnlyDictionary<string, IPlayerInfo> playerInfo => _playerInfo;
+
+    public void UpdatePlayerInfo(IPlayerInfo status)
     {
-        _players.Remove(playerInfo);
-        onPlayersChanged?.Invoke(this, _players);
+        _playerInfo[status.PlayerId] = status;
+        onPlayerInfoChanged?.Invoke(this, status);
     }
 
-    public void GameStart()
+    public void RemovePlayerInfo(string id)
     {
-        onGameStart?.Invoke(this, EventArgs.Empty);
+        if (_playerInfo.ContainsKey(id))
+        {
+            _playerInfo[id].Action = PacketAction.Remove;
+            onPlayerInfoChanged?.Invoke(this, _playerInfo[id]);
+            _playerInfo.Remove(id);
+        }
     }
 
+    //MapPoint
 
-    private Dictionary<string, PlayerStatus> _playerStatus = new();
-    public IReadOnlyDictionary<string, PlayerStatus> playerStatus => _playerStatus;
-    public void UpdatePlayerStatus(PlayerStatus status)
+    private Dictionary<string, IMapPoint> _mapPoints = new();
+    public IReadOnlyDictionary<string, IMapPoint> mapPoints => _mapPoints;
+
+    public void UpdateMapPoints(IMapPoint mapPoint)
     {
-        _playerStatus[status.playerId] = status;
-        onPlayerStatusChanged?.Invoke(this, status);
+        _mapPoints[mapPoint.Name] = mapPoint;
+        onMapPointChanged?.Invoke(this, mapPoint);
     }
 
-    public void RemovePlayerStatus(string id)
+    public void RemoveMapPoint(string name)
     {
-        onPlayerStatusRemoved?.Invoke(this, _playerStatus[id]);
-        _playerStatus.Remove(id);
+        if (_mapPoints.ContainsKey(name))
+        {
+            _mapPoints[name].Action = PacketAction.Remove;
+            onMapPointChanged?.Invoke(this, _mapPoints[name]);
+            _mapPoints.Remove(name);
+        }
     }
 }

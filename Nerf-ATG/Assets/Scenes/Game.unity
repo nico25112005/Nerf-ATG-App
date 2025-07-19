@@ -141,7 +141,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &39577594
 RectTransform:
   m_ObjectHideFlags: 0
@@ -206,8 +206,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Assets.Scripts.UIManager, Assembly-CSharp
+      - m_Target: {fileID: 234110357}
+        m_TargetAssemblyTypeName: GameView, Assembly-CSharp
         m_MethodName: SetBaseLocation
         m_Mode: 1
         m_Arguments:
@@ -575,12 +575,12 @@ GameObject:
   - component: {fileID: 220155777}
   - component: {fileID: 220155778}
   m_Layer: 0
-  m_Name: HomeLocation
+  m_Name: InformationPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &220155775
 RectTransform:
   m_ObjectHideFlags: 0
@@ -790,6 +790,12 @@ MonoBehaviour:
     element: {fileID: 995751690}
   - key: AbilityReloadTime
     element: {fileID: 1045637759}
+  - key: SetBaseButton
+    element: {fileID: 39577593}
+  - key: SetBaseInformation
+    element: {fileID: 1083581318}
+  - key: InformationPanel
+    element: {fileID: 220155774}
 --- !u!1 &283994492
 GameObject:
   m_ObjectHideFlags: 0

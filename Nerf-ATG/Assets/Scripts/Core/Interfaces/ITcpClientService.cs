@@ -8,9 +8,11 @@ public interface ITcpClientService
         ESP32
     }
 
+    const byte PACKET_SIZE = 64;
+
     void Connect(Connections connectionId, string ip, int port);
 
-    void Send(Connections connectionId, Packet<ClientPacketType> packet);
+    void Send(Connections connectionId, Packet<PacketType> packet);
 
     //void Receive();
 
@@ -20,4 +22,6 @@ public interface ITcpClientService
 
     event EventHandler<bool> Connected;
     event EventHandler<byte[]> dataReceived;
+
+    void imitateReceive(Connections connectionId, byte[] data);
 }

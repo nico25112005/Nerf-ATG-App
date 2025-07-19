@@ -20,9 +20,9 @@ public class SelectGamePresenter
 
         serverModel.onActiveGamesChanged += UpdateGameList;
 
-        serverModel.addActiveGame(CreateRandomData.CreateGameInfo());
-        serverModel.addActiveGame(CreateRandomData.CreateGameInfo());
-        serverModel.addActiveGame(CreateRandomData.CreateGameInfo());
+        serverModel.UpdateActiveGame(CreateRandomData.CreateGameInfo());
+        serverModel.UpdateActiveGame(CreateRandomData.CreateGameInfo());
+        serverModel.UpdateActiveGame(CreateRandomData.CreateGameInfo());
 
     }
 
@@ -35,15 +35,15 @@ public class SelectGamePresenter
     {
         if (!string.IsNullOrEmpty(gameName))
         {
-            tcpClientService.Send(ITcpClientService.Connections.Server, new JoinGame(playerModel.Id.ToString(), gameName));
-            gameModel.gameInfo = serverModel.ActiveGames.First(g => g.gameName == gameName);
+            tcpClientService.Send(ITcpClientService.Connections.Server, new JoinGame(playerModel.Id.ToString(), gameName, PacketAction.Generic));
+            gameModel.gameInfo = serverModel.ActiveGames.First(g => g.GameName == gameName);
         }
     }
 
     public void CreateGame(string gameName, GameType gameType)
     {       
-        tcpClientService.Send(ITcpClientService.Connections.Server, new CreateGame(playerModel.Id.ToString(), gameType, gameName, 16));
-        serverModel.addActiveGame(new GameInfo(gameType, playerModel.Id.ToString(), gameName, 1, 16)); //Todo: delete
+        tcpClientService.Send(ITcpClientService.Connections.Server, new CreateGame(playerModel.Id.ToString(), gameType, gameName, 16, PacketAction.Generic));
+        serverModel.UpdateActiveGame(new GameInfo(gameType, playerModel.Id.ToString(), gameName, 1, 16, PacketAction.Generic)); //Todo: delete
         Join(gameName);
     }
 

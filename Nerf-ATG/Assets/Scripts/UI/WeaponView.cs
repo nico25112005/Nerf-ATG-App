@@ -21,6 +21,10 @@ public class WeaponView : MonoBehaviour, IWeaponView, IWeaponViewUnityExtension
     [Inject]
     private IPlayerModel playerModel;
 
+    [Inject]
+    private ITcpClientService tcpClientService;
+
+
     private IShop<GameObject> shop;
 
 
@@ -29,7 +33,7 @@ public class WeaponView : MonoBehaviour, IWeaponView, IWeaponViewUnityExtension
         registry = gameObject.AddComponent<UIElementRegistry>();
         registry.RegisterElements(uiElements);
 
-        presenter = new WeaponPresenter(this, playerModel);
+        presenter = new WeaponPresenter(this, playerModel, tcpClientService);
 
         this.shop = new UnityItemShop(registry.GetElement("Container").transform, registry.GetElement("WeaponPrefab"));
 

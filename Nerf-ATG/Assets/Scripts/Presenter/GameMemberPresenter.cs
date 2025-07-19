@@ -3,6 +3,7 @@
 using Game.Enums;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class GameMemberPresenter
 {
@@ -21,16 +22,16 @@ public class GameMemberPresenter
         this.tcpClientService = tcpClientService;
 
 
-        gameModel.onPlayersChanged += UpdateMemberList;
+        gameModel.onPlayerInfoChanged += UpdateMemberList;
         gameModel.onGameStart += NextScene;
 
         EvalueateGameHost();
 
     }
 
-    public void UpdateMemberList(object sender, List<PlayerInfo> members)
+    public void UpdateMemberList(object sender, IPlayerInfo members) //IPlayerInfo is not used yet. UpdateMemberList has to be changed first.
     {
-        view.UpdateMemberList(members);
+        view.UpdateMemberList(gameModel.playerInfo.Values.ToList());
     }
 
     private void NextScene(object sender, EventArgs e)
@@ -41,12 +42,12 @@ public class GameMemberPresenter
 
     public void StartGame()
     {
-        tcpClientService.Send(ITcpClientService.Connections.Server, new StartGame(playerModel.Id.ToString()));
+        tcpClientService.Send(ITcpClientService.Connections.Server, new StartGame(playerModel.Id.ToString(), PacketAction.Generic));
     }
-
+    
     private void EvalueateGameHost()
     {
-        if(playerModel.Id.ToString() == gameModel.gameInfo.gameId)
+        if(playerModel.Id.ToString() == gameModel.gameInfo.GameId)
         {
             view.ActivateHostPanel();
         }
@@ -54,9 +55,9 @@ public class GameMemberPresenter
 
     public void SwitchTeam(string playerId)
     {
-        if((GameType)gameModel.gameInfo.gameType == GameType.TeamDeathMatch)
+        if((GameType)gameModel.gameInfo.GameType == GameType.TeamDeathMatch)
         {
-            tcpClientService.Send(ITcpClientService.Connections.Server, new SwitchTeam(playerId));
+            tcpClientService.Send(ITcpClientService.Connections.Server, new SwitchTeam(playerId, PacketAction.Generic));
         }
     }
 
@@ -67,6 +68,6 @@ public class GameMemberPresenter
 
     public void Spawn()
     {
-        gameModel.AddPlayer(CreateRandomData.CreatePlayerInfo());
+        gameModel.UpdatePlayerInfo(CreateRandomData.CreatePlayerInfo());
     }
 }

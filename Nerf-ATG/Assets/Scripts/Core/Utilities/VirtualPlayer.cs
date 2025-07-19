@@ -5,8 +5,8 @@ using System.Timers;
 
 public class VirtualPlayer
 {
-    private readonly IGameModel gameModel;
     private readonly IMainThreadExecutor mainThreadExecutor;
+    private readonly ITcpClientService tcpClientService;
     private readonly float radius;
     private readonly string name;
     private readonly byte teamindex;
@@ -22,9 +22,9 @@ public class VirtualPlayer
     private const double EarthRadius = 6378137; // in Meter (WGS84)
 
 
-    public VirtualPlayer(GPS gps, IGameModel gameModel, IMainThreadExecutor mainThreadExecutor, float radius, string name)
+    public VirtualPlayer(GPS gps, ITcpClientService tcpClientService, IMainThreadExecutor mainThreadExecutor, float radius, string name)
     {
-        this.gameModel = gameModel;
+        this.tcpClientService = tcpClientService;
         this.mainThreadExecutor = mainThreadExecutor;
         this.radius = radius;
         this.name = name;
@@ -82,9 +82,10 @@ public class VirtualPlayer
         if (health > 100) health = 100;
         if (health < 0) health = 0;
 
-        PlayerStatus playerStatus = new PlayerStatus(id.ToString(), name, (Team)teamindex, lastGps.Longitude, lastGps.Latitude, (byte)health);
+        byte[] playerStatus = new byte[ITcpClientService.PACKET_SIZE];
+        new PlayerStatus(id.ToString(), name, (Team)teamindex, lastGps, (byte)health, PacketAction.Update).ToBytes(playerStatus);
 
-        mainThreadExecutor.Execute(() => gameModel.UpdatePlayerStatus(playerStatus));
+        mainThreadExecutor.Execute(() => tcpClientService.imitateReceive(ITcpClientService.Connections.Server, playerStatus));
     }
 
 

@@ -21,8 +21,13 @@ public class FakeTcpClientService : ITcpClientService
         Debug.Log($"Connect: {connectionId}, {ip}, {port}");
     }
 
-    public void Send(ITcpClientService.Connections connectionId, Packet<ClientPacketType> packet)
+    public void imitateReceive(ITcpClientService.Connections connectionId, byte[] data)
     {
-        Debug.Log($"Send: {connectionId}, {packet.GetType()}");
+        dataReceived?.Invoke(connectionId, data);
+    }
+
+    public void Send(ITcpClientService.Connections connectionId, Packet<PacketType> packet)
+    {
+        Debug.Log($"Send: {connectionId}, {packet.Type}");
     }
 }

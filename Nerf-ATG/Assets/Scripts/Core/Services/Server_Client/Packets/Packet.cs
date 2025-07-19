@@ -5,25 +5,43 @@ using Unity.VisualScripting;
 
 public abstract class Packet<T> where T : Enum
 {
-    private readonly T type;
-    public Packet(byte[] bytes, T type)
+    public T Type { get; private set; }
+    public PacketAction Action { get; set; }
+    public Packet(byte[] bytes)
     {
-        this.type = type;
-        BitConverter.GetBytes(Convert.ToInt32(type)).CopyTo(bytes, 0);
+        this.Type = (T)Enum.ToObject(typeof(T), bytes[0]);
+        this.Action = (PacketAction)bytes[1];
         this.FromBytes(bytes);
     }
 
-    public Packet(T type)
+    public Packet(T type, PacketAction action)
     {
-        this.type = type;
+        this.Type = type;
+        this.Action = action;
     }
 
-    public new T GetType()
+    public void ToBytes(byte[] bytes)
     {
-        return type;
+        bytes[0] = Convert.ToByte(Type);
+        bytes[1] = (byte)Action;
+        WritePayload(bytes, 4); // Payload begins after 4 bytes
     }
 
-    public abstract void FromBytes(byte[] bytes);
-    public abstract void ToBytes(byte[] bytes);
+    public void FromBytes(byte[] bytes)
+    {
+        ReadPayload(bytes, 4);
+    }
+
+    protected abstract void ReadPayload(byte[] bytes, byte offset);
+    protected abstract void WritePayload(byte[] bytes, byte offset);
+}
+
+public enum PacketAction
+{
+    Generic,
+    Add,
+    Update,
+    Remove,
+    Replace
 }
 

@@ -112,11 +112,11 @@ namespace Game
             TeamDeathMatch
         }
 
-        public enum MarkerType
+        public enum MapPointType
         {
-            Enemy,
-            Allie,
-            Base
+            Enemy = 10,
+            Allie = 11,
+            Base = 12
         }
     }
 
@@ -146,7 +146,7 @@ namespace Game
         public static Dictionary<Abilitys, AbilityInfo> abilityInfo = new()
         {
             {Abilitys.RapidFire, new AbilityInfo(Abilitys.RapidFire, 240, "Rapid Fire: Fires twice as fast for 1 magazine")},
-            {Abilitys.GPSLocate, new AbilityInfo(Abilitys.GPSLocate, 5, "GPS Locate: Locates all enemy")},
+            {Abilitys.GPSLocate, new AbilityInfo(Abilitys.GPSLocate, 5, "GPS Locate: Locates all enemys for 5 seconds")},
             {Abilitys.Healpackage, new AbilityInfo(Abilitys.Healpackage, 180, "Heal Package: Heals 50hp")}
         };
     }

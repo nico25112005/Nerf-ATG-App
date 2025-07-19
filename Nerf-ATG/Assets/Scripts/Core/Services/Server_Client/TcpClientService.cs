@@ -8,8 +8,6 @@ using System.Threading.Tasks;
 
 internal class TcpClientService : ITcpClientService
 {
-    private const byte PACKET_SIZE = 64;
-
     private class ConnectionData
     {
         public TcpClient Client;
@@ -26,7 +24,7 @@ internal class TcpClientService : ITcpClientService
     {
         if (connections.ContainsKey(connectionId))
         {
-            return;
+            throw new Exception("Already Connected");
         }
 
         try
@@ -51,7 +49,7 @@ internal class TcpClientService : ITcpClientService
         }
     }
 
-    public void Send(ITcpClientService.Connections connectionId, Packet<ClientPacketType> packet)
+    public void Send(ITcpClientService.Connections connectionId, Packet<PacketType> packet)
     {
         if (!connections.TryGetValue(connectionId, out var conn))
         {
@@ -64,9 +62,9 @@ internal class TcpClientService : ITcpClientService
             {
                 if (conn.Client.Connected)
                 {
-                    byte[] data = new byte[PACKET_SIZE];
+                    byte[] data = new byte[ITcpClientService.PACKET_SIZE];
                     packet.ToBytes(data);
-                    conn.Stream.Write(data, 0, PACKET_SIZE);
+                    conn.Stream.Write(data, 0, ITcpClientService.PACKET_SIZE);
                 }
             }
             catch (Exception)
@@ -85,12 +83,12 @@ internal class TcpClientService : ITcpClientService
         {
             while (!token.IsCancellationRequested)
             {
-                if (conn.Client.Available >= PACKET_SIZE)
+                if (conn.Client.Available >= ITcpClientService.PACKET_SIZE)
                 {
-                    byte[] bytes = new byte[PACKET_SIZE];
-                    await conn.Stream.ReadAsync(bytes, 0, PACKET_SIZE, token);
+                    byte[] bytes = new byte[ITcpClientService.PACKET_SIZE];
+                    await conn.Stream.ReadAsync(bytes, 0, ITcpClientService.PACKET_SIZE, token);
 
-                    dataReceived.Invoke(this, bytes);
+                    dataReceived.Invoke(connectionId, bytes);
                 }
 
                 await Task.Delay(100, token);
@@ -132,4 +130,8 @@ internal class TcpClientService : ITcpClientService
         }
     }
 
+    public void imitateReceive(ITcpClientService.Connections connectionId, byte[] data)
+    {
+        dataReceived.Invoke(connectionId, data);
+    }
 }

@@ -5,6 +5,9 @@ using Zenject;
 public class PersistentMainManager : MonoBehaviour
 {
     [Inject]
+    private IPlayerModel playerModel;
+
+    [Inject]
     private IGameModel gameModel;
 
     [Inject]
@@ -17,7 +20,6 @@ public class PersistentMainManager : MonoBehaviour
 
     void Awake()
     {
-
         InitializeServices();
         DontDestroyOnLoad(gameObject);
     }
@@ -26,7 +28,7 @@ public class PersistentMainManager : MonoBehaviour
     {
         Debug.Log("Services wurden initialisiert.");
 
-        new TcpDataPresenter(gameModel, serverModel, tcpClientService);
+        new TcpDataPresenter(playerModel, gameModel, serverModel, tcpClientService);
         
     }
 
