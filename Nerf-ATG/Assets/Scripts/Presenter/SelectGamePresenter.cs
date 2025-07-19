@@ -43,7 +43,7 @@ public class SelectGamePresenter
     public void CreateGame(string gameName, GameType gameType)
     {       
         tcpClientService.Send(ITcpClientService.Connections.Server, new CreateGame(playerModel.Id.ToString(), gameType, gameName, 16, PacketAction.Generic));
-        serverModel.UpdateActiveGame(new GameInfo(gameType, playerModel.Id.ToString(), gameName, 1, 16, PacketAction.Generic)); //Todo: delete
+        serverModel.UpdateActiveGame(new GameInfo(gameType, playerModel.Id.ToString(), gameName, 1, 16, PacketAction.Generic));
         Join(gameName);
     }
 

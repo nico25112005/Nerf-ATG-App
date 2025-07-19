@@ -300,21 +300,18 @@ namespace Assets.Scripts
             // Service didn't initialize in 20 seconds
             if (maxWait < 1)
             {
-                // Todo: info needed
                 yield break;
             }
 
             // Connection has failed
             if (Input.location.status == LocationServiceStatus.Failed)
             {
-                // Todo: info needed
                 yield break;
             }
             else
             {
                 GetUIElement("SetBaseButton").SetActive(true);
                 //Acces granted
-                // Todo: info needed
                 InvokeRepeating("UpdateGPS", 0f, 0.25f);
             }
         }

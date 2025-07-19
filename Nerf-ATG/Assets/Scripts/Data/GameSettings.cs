@@ -82,6 +82,7 @@ namespace Game
             Healing,
             GpsShift,
             Damping
+          
         }
 
         public enum WeaponType

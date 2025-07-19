@@ -29,9 +29,9 @@ public class GameMemberPresenter
 
     }
 
-    public void UpdateMemberList(object sender, IPlayerInfo members) //IPlayerInfo is not used yet. UpdateMemberList has to be changed first.
+    public void UpdateMemberList(object sender, IPlayerInfo player)
     {
-        view.UpdateMemberList(gameModel.playerInfo.Values.ToList());
+        view.UpdateMemberList(player);
     }
 
     private void NextScene(object sender, EventArgs e)
@@ -68,6 +68,8 @@ public class GameMemberPresenter
 
     public void Spawn()
     {
-        gameModel.UpdatePlayerInfo(CreateRandomData.CreatePlayerInfo());
+        byte[] playerInfoBytes = new byte[ITcpClientService.PACKET_SIZE];
+        CreateRandomData.CreatePlayerInfo().ToBytes(playerInfoBytes);
+        tcpClientService.imitateReceive(ITcpClientService.Connections.Server, playerInfoBytes);
     }
 }

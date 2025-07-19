@@ -1,4 +1,5 @@
 ﻿
+using Game.Enums;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -39,48 +40,71 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
     }
 
 
-    public void UpdateMemberList(List<IPlayerInfo> gameMembers) //Todo: refactor to do it without handing over the whole list
+    public void UpdateMemberList(IPlayerInfo player) //Todo: refactor to do it without handing over the whole list
     {
-        foreach (Transform child in registry.GetElement("GameMemberList").transform)
+        switch (player.Action)
         {
-            Destroy(child.gameObject);
+            case PacketAction.Add:
+                AddGameMember(player);
+                break;
+
+            case PacketAction.Remove:
+                RemoveGameMember(player.PlayerId);
+                break;
+            
+            case PacketAction.Update:
+                RemoveGameMember(player.PlayerId);
+                AddGameMember(player);
+                break;
+        }
+    }
+
+    private void AddGameMember(IPlayerInfo player)
+    {
+        GameObject prefabInstance = Instantiate(registry.GetElement("GameMemberPrefab"), registry.GetElement("GameMemberList").transform);
+        prefabInstance.transform.Find("MemberName").GetComponent<Text>().text = player.Name;
+        prefabInstance.name = player.PlayerId;
+
+        Color32 teamcolor;
+
+        switch ((Team)player.Index)
+        {
+            case Team.Red:
+                teamcolor = new Color32(146, 0, 197, 255);
+                break;
+            case Team.Blue:
+                teamcolor = new Color32(0, 118, 197, 255);
+                break;
+            case Team.Violet:
+                teamcolor = new Color32(197, 0, 32, 255);
+                break;
+            default:
+                teamcolor = new Color32(255, 255, 255, 255);
+                break;
         }
 
-        foreach (PlayerInfo gameMember in gameMembers)
+        prefabInstance.transform.Find("MemberTeam").GetComponent<Image>().color = teamcolor;
+
+        if (_isHost)
         {
-            GameObject prefabInstance = Instantiate(registry.GetElement("GameMemberPrefab"), registry.GetElement("GameMemberList").transform);
-            prefabInstance.transform.Find("MemberName").GetComponent<Text>().text = gameMember.Name;
+            prefabInstance.transform.Find("MemberTeam").GetComponent<Button>().onClick.AddListener(() => ButtonClick(player));
 
-            Color32 teamcolor;
-
-            switch (gameMember.Index)
-            {
-                case 0:
-                    teamcolor = new Color32(146, 0, 197, 255);
-                    break;
-                case 1:
-                    teamcolor = new Color32(0, 118, 197, 255);
-                    break;
-                case 2:
-                    teamcolor = new Color32(197, 0, 32, 255);
-                    break;
-                default:
-                    teamcolor = new Color32(255, 255, 255, 255);
-                    break;
-            }
-
-            prefabInstance.transform.Find("MemberTeam").GetComponent<Image>().color = teamcolor;
-
-            if (!_isHost)
-                prefabInstance.transform.Find("MemberTeam").GetComponent<Button>().interactable = false;
-            prefabInstance.transform.Find("MemberTeam").GetComponent<Button>().onClick.AddListener(() => ButtonClick(gameMember));
-            void ButtonClick(PlayerInfo playerInfo)
+            void ButtonClick(IPlayerInfo playerInfo)
             {
                 presenter.SwitchTeam(playerInfo.PlayerId.ToString());
             }
         }
-
+        else
+        {
+            prefabInstance.transform.Find("MemberTeam").GetComponent<Button>().interactable = false;
+        }
     }
+
+    private void RemoveGameMember(string playerId)
+    {
+        Destroy(registry.GetElement("GameMemberList").transform.Find(playerId).gameObject);
+    }
+
 
 
     public void ActivateHostPanel()
@@ -104,7 +128,7 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
         presenter.Quit();
     }
 
-    //Todo: testCode
+    //Todo: remove testCode
     private IEnumerator SpawnPlayers(int amaount)
     {
         int count = 0;

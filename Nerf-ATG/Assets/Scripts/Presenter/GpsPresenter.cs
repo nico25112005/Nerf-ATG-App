@@ -112,7 +112,7 @@ public class GpsPresenter
 
     }
 
-    public void RadarAbility(object sender, Abilitys ability) // Todo: Implement
+    public void RadarAbility(object sender, Abilitys ability)
     {
         if (ability == Abilitys.GPSLocate)
         {
