@@ -41,6 +41,6 @@ public class GameInfo : Packet<PacketType>
 
     public override string ToString()
     {
-        return $"GameInfo{{gameType={GameType}, gameId='{GameId}', gameName='{GameName}', playerCount={PlayerCount}, maxPlayer={MaxPlayer}}}";
+        return $"GameInfo{{gameType={GameType}, gameId='{GameId}', gameName='{GameName}', playerCount={PlayerCount}, maxPlayer={MaxPlayer}, action={Action}}}";
     }
 }

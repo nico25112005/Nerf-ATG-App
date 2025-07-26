@@ -20,15 +20,13 @@ public class SelectGamePresenter
 
         serverModel.onActiveGamesChanged += UpdateGameList;
 
-        serverModel.UpdateActiveGame(CreateRandomData.CreateGameInfo());
-        serverModel.UpdateActiveGame(CreateRandomData.CreateGameInfo());
-        serverModel.UpdateActiveGame(CreateRandomData.CreateGameInfo());
-
+        //serverModel.AddActiveGame(CreateRandomData.CreateGameInfo());
+        //serverModel.AddActiveGame(CreateRandomData.CreateGameInfo());
     }
 
-    void UpdateGameList(object sender, List<GameInfo> games)
+    void UpdateGameList(object sender, GameInfo gameInfo)
     {
-        view.UpdateGameList(games);
+        view.UpdateGameList(gameInfo);
     }
 
     public void Join(string gameName)
@@ -43,7 +41,7 @@ public class SelectGamePresenter
     public void CreateGame(string gameName, GameType gameType)
     {       
         tcpClientService.Send(ITcpClientService.Connections.Server, new CreateGame(playerModel.Id.ToString(), gameType, gameName, 16, PacketAction.Generic));
-        serverModel.UpdateActiveGame(new GameInfo(gameType, playerModel.Id.ToString(), gameName, 1, 16, PacketAction.Generic));
+        serverModel.AddActiveGame(new GameInfo(gameType, playerModel.Id.ToString(), gameName, 1, 16, PacketAction.Generic));
         Join(gameName);
     }
 

@@ -9,6 +9,7 @@ public interface IGameView
     void DeactivateInformationPanel();
     void SetBaseInformationText(string text);
     void SetBaseLocationButtonVisable();
+    void ShowToastMessage(string message, string icon);
 
 
 }

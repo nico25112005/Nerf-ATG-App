@@ -36,7 +36,7 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
 
         presenter = new GameMemberPresenter(this, playerModel, gameModel, tcpClientService);
 
-        StartCoroutine(SpawnPlayers(20));
+        //StartCoroutine(SpawnPlayers(20));
     }
 
 
@@ -46,10 +46,12 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
         {
             case PacketAction.Add:
                 AddGameMember(player);
+                ToastNotification.Show("Player Joined: " + player.Name, "info");
                 break;
 
             case PacketAction.Remove:
                 RemoveGameMember(player.PlayerId);
+                ToastNotification.Show("Player Left: " + player.Name, "info");
                 break;
             
             case PacketAction.Update:
@@ -129,6 +131,7 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
     }
 
     //Todo: remove testCode
+    /*
     private IEnumerator SpawnPlayers(int amaount)
     {
         int count = 0;
@@ -140,5 +143,5 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
             count++;
         }
     }
-
+    */
 }

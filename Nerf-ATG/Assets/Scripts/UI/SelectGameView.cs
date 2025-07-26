@@ -40,27 +40,45 @@ public class SelectGameView : MonoBehaviour, ISelectGameView
 
     }
 
-    public void UpdateGameList(List<GameInfo> games)
+    public void UpdateGameList(GameInfo gameInfo)
     {
-        foreach (Transform child in registry.GetElement("GameList").transform)
-        {
-            Destroy(child.gameObject);
-        }
 
-        foreach(GameInfo gameInfo in games)
+        switch (gameInfo.Action)
         {
-            
-            GameObject prefabInstance = Instantiate(registry.GetElement("GamePrefab"), registry.GetElement("GameList").transform);
-            prefabInstance.transform.Find("DeviceName").GetComponent<Text>().text = gameInfo.GameName;
-            prefabInstance.transform.Find("Playercount").GetComponent<Text>().text = $"{gameInfo.PlayerCount}/{gameInfo.MaxPlayer}";
-            prefabInstance.transform.Find("Gamemode").GetComponent<Text>().text = ((GameType)gameInfo.GameType).ToAbbreviation();
-            prefabInstance.GetComponent<Button>().onClick.AddListener(() => ButtonClick(prefabInstance.GetComponentInChildren<Text>()));
+            case PacketAction.Add:
+                AddGame(gameInfo);
+                ToastNotification.Show("New Game: " + gameInfo.GameName, "info");
+                break;
 
-            void ButtonClick(Text game)
-            {
-                registry.GetElement("GameConnection").GetComponent<Text>().text = game.text;
-            }
+            case PacketAction.Remove:
+                RemoveGame(gameInfo);
+                ToastNotification.Show("Game " + gameInfo.GameName + " got closed", "info");
+                break;
+
+            case PacketAction.Update:
+                RemoveGame(gameInfo);
+                AddGame(gameInfo);
+                break;
         }
+    }
+
+    private void AddGame(GameInfo gameInfo)
+    {
+        GameObject prefabInstance = Instantiate(registry.GetElement("GamePrefab"), registry.GetElement("GameList").transform);
+        prefabInstance.transform.Find("DeviceName").GetComponent<Text>().text = gameInfo.GameName;
+        prefabInstance.transform.Find("Playercount").GetComponent<Text>().text = $"{gameInfo.PlayerCount}/{gameInfo.MaxPlayer}";
+        prefabInstance.transform.Find("Gamemode").GetComponent<Text>().text = ((GameType)gameInfo.GameType).ToAbbreviation();
+        prefabInstance.GetComponent<Button>().onClick.AddListener(() => ButtonClick(prefabInstance.GetComponentInChildren<Text>()));
+
+        void ButtonClick(Text game)
+        {
+            registry.GetElement("GameConnection").GetComponent<Text>().text = game.text;
+        }
+    }
+
+    private void RemoveGame(GameInfo gameInfo)
+    {
+        Destroy(registry.GetElement("GameList").transform.Find(gameInfo.GameName).gameObject);
     }
 
     public void Join()
@@ -76,14 +94,26 @@ public class SelectGameView : MonoBehaviour, ISelectGameView
     {
         string gameName = registry.GetElement("GameName").GetComponent<InputField>().text;
 
-        Dropdown gameTypeDropdown = registry.GetElement("GameType").GetComponent<Dropdown>();
+        if (string.IsNullOrEmpty(gameName))
+        {
+            ToastNotification.Show("Please enter a gamename!", "error");
+        }
+        else if (name.Length > 12)
+        {
+            ToastNotification.Show("Gamename too long!", "error");
+        }
+        else
+        {
 
-        GameType gameType = gameTypeDropdown.options[gameTypeDropdown.value].text.Replace(" ", "").ToEnum<GameType>();
+            Dropdown gameTypeDropdown = registry.GetElement("GameType").GetComponent<Dropdown>();
+
+            GameType gameType = gameTypeDropdown.options[gameTypeDropdown.value].text.Replace(" ", "").ToEnum<GameType>();
 
 
-        presenter.CreateGame(gameName, gameType);
+            presenter.CreateGame(gameName, gameType);
 
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        }
     }
 
     public void Quit()

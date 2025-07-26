@@ -35,12 +35,12 @@ public class MenuView : MonoBehaviour, IMenuView
 
     public void UpdateBlasterList(List<string> blasters)
     {
-        
+
         foreach (Transform child in registry.GetElement("DeviceList").transform)
         {
             Destroy(child.gameObject);
         }
-        
+
         foreach (string blaster in blasters)
         {
             GameObject prefabInstance = Instantiate(registry.GetElement("DevicePrefab"), registry.GetElement("DeviceList").transform);
@@ -68,9 +68,20 @@ public class MenuView : MonoBehaviour, IMenuView
 
     public void ConnectToServer()
     {
-        presenter.ConnectToServer(registry.GetElement("Name").GetComponent<InputField>().text);
-
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        string name = registry.GetElement("Name").GetComponent<InputField>().text;
+        if (string.IsNullOrEmpty(name))
+        {
+            ToastNotification.Show("Please enter a name!", "error");
+        }
+        else if(name.Length > 12)
+        {
+            ToastNotification.Show("Name too long!", "error");
+        }
+        else
+        {
+            presenter.ConnectToServer(registry.GetElement("Name").GetComponent<InputField>().text);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        }
     }
 
 }

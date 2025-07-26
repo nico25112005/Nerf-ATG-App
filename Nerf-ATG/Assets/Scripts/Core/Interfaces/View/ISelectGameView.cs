@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 
 public interface ISelectGameView
 {
-    void UpdateGameList(List<GameInfo> games);
+    void UpdateGameList(GameInfo gameInfo);
 }
 

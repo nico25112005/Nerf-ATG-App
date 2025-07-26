@@ -22,7 +22,7 @@ public class MenuPresenter
 
     public void Connect()
     {
-        tcpClientService.Connect(ITcpClientService.Connections.ESP32, "Todo", 1234);
+        //tcpClientService.Connect(ITcpClientService.Connections.ESP32, "Todo", 1234);
     }
 
     public void Scan()
@@ -33,7 +33,7 @@ public class MenuPresenter
     public void ConnectToServer(string name)
     {
         model.Name = name;
-        tcpClientService.Connect(ITcpClientService.Connections.Server, "Todo", 1234);
+        tcpClientService.Connect(ITcpClientService.Connections.Server, "192.168.1.189", 25115);
 
     }
 }

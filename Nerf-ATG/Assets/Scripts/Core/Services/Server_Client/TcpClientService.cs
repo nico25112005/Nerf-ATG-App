@@ -40,7 +40,6 @@ internal class TcpClientService : ITcpClientService
                 Stream = stream,
                 Cancellation = cts
             };
-
             Task.Run(() => ReceiveMessages(connectionId, cts.Token));
         }
         catch (Exception)
@@ -79,30 +78,41 @@ internal class TcpClientService : ITcpClientService
         if (!connections.TryGetValue(connectionId, out var conn))
             return;
 
+        const int PacketSize = ITcpClientService.PACKET_SIZE;
+        var readBuffer = new byte[4096];
+        var packetBuffer = new List<byte>(PacketSize * 4);
+
         try
         {
             while (!token.IsCancellationRequested)
             {
-                if (conn.Client.Available >= ITcpClientService.PACKET_SIZE)
+                int bytesRead = await conn.Stream.ReadAsync(readBuffer, 0, readBuffer.Length, token);
+                if (bytesRead == 0)
+                    break; // lost connection
+
+               
+                packetBuffer.AddRange(readBuffer.AsSpan(0, bytesRead).ToArray());
+
+                
+                while (packetBuffer.Count >= PacketSize)
                 {
-                    byte[] bytes = new byte[ITcpClientService.PACKET_SIZE];
-                    await conn.Stream.ReadAsync(bytes, 0, ITcpClientService.PACKET_SIZE, token);
+                    var packet = packetBuffer.GetRange(0, PacketSize).ToArray();
+                    packetBuffer.RemoveRange(0, PacketSize);
 
-                    dataReceived.Invoke(connectionId, bytes);
+                    dataReceived?.Invoke(connectionId, packet);
                 }
-
-                await Task.Delay(100, token);
             }
         }
         catch (OperationCanceledException)
         {
-            // Erwartetes Abbruchsignal
+            // normaler Abbruch
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Fehlerbehandlung nach Bedarf
+            // Logging z.B.
         }
     }
+
 
     public void Close(ITcpClientService.Connections connectionId)
     {

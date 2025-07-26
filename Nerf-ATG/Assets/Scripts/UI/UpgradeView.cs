@@ -91,6 +91,10 @@ public class UpgradeView : MonoBehaviour, IUpgradeView, IUpgradeViewUnityExtensi
             instance.transform.Find("UpgradeImageBackground").GetComponent<Button>().interactable = (Price.Length != upgrade.Value);
         }
     }
+    public void ShowToastMessage(string message, string icon)
+    {
+        ToastNotification.Show(message, icon);
+    }
 
     //Buttons
 
@@ -113,4 +117,5 @@ public class UpgradeView : MonoBehaviour, IUpgradeView, IUpgradeViewUnityExtensi
     {
         presenter.Dispose();
     }
+
 }

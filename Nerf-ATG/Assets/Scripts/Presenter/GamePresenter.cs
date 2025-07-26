@@ -140,6 +140,7 @@ public class GamePresenter
 
         if (elapsedTime >= cooldown)
         {
+            mainThreadExecutor.Execute(() => view.ShowToastMessage("Ability ready", "success"));
             timer.Stop();
             timer.Dispose();
         }

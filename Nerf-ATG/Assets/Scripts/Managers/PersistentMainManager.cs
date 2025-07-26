@@ -16,6 +16,9 @@ public class PersistentMainManager : MonoBehaviour
     [Inject]
     private ITcpClientService tcpClientService;
 
+    [Inject]
+    private IMainThreadExecutor mainThreadExecutor;
+
 
 
     void Awake()
@@ -28,7 +31,7 @@ public class PersistentMainManager : MonoBehaviour
     {
         Debug.Log("Services wurden initialisiert.");
 
-        new TcpDataPresenter(playerModel, gameModel, serverModel, tcpClientService);
+        new TcpDataPresenter(playerModel, gameModel, serverModel, tcpClientService, mainThreadExecutor);
         
     }
 

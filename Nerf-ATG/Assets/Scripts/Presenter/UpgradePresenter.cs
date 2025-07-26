@@ -52,7 +52,7 @@ public class UpgradePresenter
         }
         else
         {
-            //Todo: toast info or something
+            view.ShowToastMessage("Not enough coins", "error");
         }
     }
 

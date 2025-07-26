@@ -120,6 +120,10 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
         // Update cooldown fill
         reloadImage.fillAmount = (float)cooldown;
     }
+    public void ShowToastMessage(string message, string icon)
+    {
+        ToastNotification.Show(message, icon);
+    }
 
     //GpsMap
 
@@ -271,4 +275,5 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
         gamePresenter.Dispose();
         gpsPresenter.Dispose();
     }
+
 }
