@@ -35,8 +35,9 @@ public class GamePresenter
         playerModel.AbilityActivated += RapidFireAbility;
         playerModel.OnLocationChanged += SetBaseLocationButtonActive;
 
-        gameModel.onReadyPlayerCountChanged += UpdateReadyPlayerCount;
+        gameModel.onReadyPlayerCountChanged += UpdateInformationPanel;
         gameModel.onNewBaseLocation += NewBaseSet;
+        gameModel.onNewBaseLocation += (object sender, EventArgs e) => UnityEngine.Debug.LogWarning($"NewBaseSetEvent from: {sender} {e}");
 
         if (view is IGameViewUnityExtension unityView)
         {
@@ -46,6 +47,7 @@ public class GamePresenter
         }
 
         view.UpdateAbilityIcon(Settings.weaponInfo[playerModel.WeaponType].Ability, 1);
+        UpdateInformationPanel(this, 0);
         playerModel.Health += 0;
         playerModel.Ammo += 0;
         playerModel.MaxAmmo += 0;
@@ -70,7 +72,7 @@ public class GamePresenter
 
     public void SetBaseLocationButtonActive(object sender, GPS gps)
     {
-        if (gameModel.readyPlayerCount == gameModel.playerInfo.Count())
+        if (gameModel.readyPlayerCount == gameModel.playerInfo.Count() && string.Equals(gameModel.teamLeader[playerModel.Team].Item1, playerModel.Id.ToString()))
         {
             view.SetBaseLocationButtonVisable();
             playerModel.OnLocationChanged -= SetBaseLocationButtonActive;
@@ -79,8 +81,10 @@ public class GamePresenter
 
     public void NewBaseSet(object sender, EventArgs e)
     {
-        view.SetBaseInformationText($"Your Teamleader is: {gameModel.teamLeader[playerModel.Team]}" +
-                   $"Waiting for the teamleaders to set their base: {gameModel.baseLocation.Count()}/{gameModel.teamLeader.Count()} " +
+        UnityEngine.Debug.LogWarning($"NewBaseSetEvent: {sender}");
+
+        view.SetBaseInformationText($"Your Teamleader is: {gameModel.teamLeader[playerModel.Team].Item2}\n" +
+                   $"Waiting for the teamleaders to set their base: {gameModel.baseLocation.Count()}/{gameModel.teamLeader.Count()}\n" +
                    $"Within a radius of {Game.Settings.BaseRadius} around your base, you can heal and replenish your ammunition.");
 
         if (gameModel.baseLocation.Count() == gameModel.teamLeader.Count())
@@ -90,23 +94,32 @@ public class GamePresenter
         }
     }
 
-    public void UpdateReadyPlayerCount(object sender, byte readyPlayerCount)
+    public void UpdateInformationPanel(object sender, byte readyPlayerCount)
     {
-        if (readyPlayerCount > gameModel.playerInfo.Count())
+
+        if (readyPlayerCount < gameModel.playerInfo.Count())
         {
+            UnityEngine.Debug.LogWarning($"Waiting: {sender}, Ready: {gameModel.readyPlayerCount}/{gameModel.playerInfo.Count()}");
+            
+
             view.SetBaseInformationText($"Waiting for all players to get ready\n\n Ready: {gameModel.readyPlayerCount}/{gameModel.playerInfo.Count()}");
         }
         else
         {
             if (string.Equals(gameModel.teamLeader[playerModel.Team].Item1, playerModel.Id.ToString()))
             {
+                UnityEngine.Debug.LogWarning($"teamleaderid: {gameModel.teamLeader[playerModel.Team].Item1}, playerid: {playerModel.Id}");
+                UnityEngine.Debug.LogWarning($"Teamleader: {sender}");
+
                 view.SetBaseInformationText($"Please go to a place where you would like to set the base for your team." +
                     $"You can then heal yourself and replenish your ammunition within a radius of {Game.Settings.BaseRadius} around your base.");
             }
             else
             {
-                view.SetBaseInformationText($"Your Teamleader is: {gameModel.teamLeader[playerModel.Team]}" +
-                    $"Waiting for the teamleaders to set their base: 0/{gameModel.teamLeader.Count()} " +
+                UnityEngine.Debug.LogWarning($"No Teamleader: {sender}");
+
+                view.SetBaseInformationText($"Your Teamleader is: {gameModel.teamLeader[playerModel.Team].Item2}\n" +
+                    $"Waiting for the teamleaders to set their base: 0/{gameModel.teamLeader.Count()}\n" +
                     $"Within a radius of {Game.Settings.BaseRadius} around your base, you can heal and replenish your ammunition.");
             }
         }

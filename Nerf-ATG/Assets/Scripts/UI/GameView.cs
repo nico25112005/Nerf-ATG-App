@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
+using System.Threading;
 
 public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtension
 {
@@ -244,7 +245,7 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
 
     public void SetBaseLocationButtonVisable()
     {
-        registry.GetElement("SetBaseLocationButton").gameObject.SetActive(true);
+        registry.GetElement("SetBaseButton").gameObject.SetActive(true);
     }
 
     public void SetBaseInformationText(string text)

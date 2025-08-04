@@ -33,7 +33,7 @@ public class PlayerModel : IPlayerModel
     }
 
     public string Name { get; set; } = "";
-    public Guid Id { get;} = Guid.NewGuid();
+    public string Id { get;} = "12345678";
 
     // Health
     private byte _health;

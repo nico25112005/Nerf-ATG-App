@@ -13,7 +13,7 @@ public class ProjectInstaller : ScriptableObjectInstaller<ProjectInstaller>
         Container.Bind<IGameModel>().To<GameModel>().AsSingle();
         Container.Bind<IServerModel>().To<ServerModel>().AsSingle();
 
-        Container.Bind<ITcpClientService>().To<FakeTcpClientService>().AsSingle();
+        Container.Bind<ITcpClientService>().To<TcpClientService>().AsSingle();
         Container.Bind<IMainThreadExecutor>().To<MainThreadExecutor>().AsSingle();
     }
 }

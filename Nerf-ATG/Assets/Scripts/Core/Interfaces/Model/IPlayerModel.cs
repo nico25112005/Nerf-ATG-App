@@ -16,7 +16,7 @@ public interface IPlayerModel
     event EventHandler<Abilitys> AbilityActivated;
 
     string Name { get; set; }
-    Guid Id { get; }
+    string Id { get; }
     WeaponType WeaponType { get; set; }
     byte Coins { get; set; }
     Team Team { get; set; }

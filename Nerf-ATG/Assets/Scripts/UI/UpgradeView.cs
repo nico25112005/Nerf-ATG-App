@@ -25,6 +25,9 @@ public class UpgradeView : MonoBehaviour, IUpgradeView, IUpgradeViewUnityExtensi
     [Inject]
     private IPlayerModel playerModel;
 
+    [Inject]
+    private ITcpClientService tcpClientService;
+
     private IShop<GameObject> shop;
 
 
@@ -35,7 +38,7 @@ public class UpgradeView : MonoBehaviour, IUpgradeView, IUpgradeViewUnityExtensi
         registry = gameObject.AddComponent<UIElementRegistry>();
         registry.RegisterElements(uiElements);
 
-        presenter = new UpgradePresenter(this, playerModel);
+        presenter = new UpgradePresenter(this, playerModel, tcpClientService);
 
         shop = new UnityItemShop(registry.GetElement("Container").transform, registry.GetElement("UpgradePrefab"));
 

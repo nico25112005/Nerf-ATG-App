@@ -72,13 +72,13 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
         switch ((Team)player.Index)
         {
             case Team.Red:
-                teamcolor = new Color32(146, 0, 197, 255);
+                teamcolor = new Color32(197, 0, 32, 255);
                 break;
             case Team.Blue:
                 teamcolor = new Color32(0, 118, 197, 255);
                 break;
             case Team.Violet:
-                teamcolor = new Color32(197, 0, 32, 255);
+                teamcolor = new Color32(146, 0, 197, 255);
                 break;
             default:
                 teamcolor = new Color32(255, 255, 255, 255);
@@ -128,6 +128,11 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
     public void Quit()
     {
         presenter.Quit();
+    }
+
+    public void OnDestroy()
+    {
+        presenter.Dispose();
     }
 
     //Todo: remove testCode

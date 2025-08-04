@@ -3,6 +3,7 @@
 using Game.Enums;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 public class GameMemberPresenter
@@ -47,6 +48,7 @@ public class GameMemberPresenter
     
     private void EvalueateGameHost()
     {
+        UnityEngine.Debug.LogWarning($"PlayerId: {playerModel.Id.ToString()}, GameId: {gameModel.gameInfo.GameId}");
         if(playerModel.Id.ToString() == gameModel.gameInfo.GameId)
         {
             view.ActivateHostPanel();
@@ -71,5 +73,11 @@ public class GameMemberPresenter
         byte[] playerInfoBytes = new byte[ITcpClientService.PACKET_SIZE];
         CreateRandomData.CreatePlayerInfo().ToBytes(playerInfoBytes);
         tcpClientService.imitateReceive(ITcpClientService.Connections.Server, playerInfoBytes);
+    }
+
+    public void Dispose()
+    {
+        gameModel.onPlayerInfoChanged -= UpdateMemberList;
+        gameModel.onGameStart -= NextScene;
     }
 }

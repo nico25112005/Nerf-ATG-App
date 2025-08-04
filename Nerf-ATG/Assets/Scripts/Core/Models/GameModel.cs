@@ -48,7 +48,7 @@ public class GameModel : IGameModel
     }
 
     //Base & Teamleader
-    public Dictionary<Team, (string, string)> teamLeader { get; set; }
+    public Dictionary<Team, (string, string)> teamLeader { get; set; } = new();
 
     private Dictionary<Team, GPS> _baseLocation = new();
     public IReadOnlyDictionary<Team, GPS> baseLocation => _baseLocation;

@@ -10,10 +10,14 @@ public class UpgradePresenter
 
     IPlayerModel playerModel;
 
-    public UpgradePresenter(IUpgradeView view, IPlayerModel playerModel)
+    ITcpClientService tcpClientService;
+
+    public UpgradePresenter(IUpgradeView view, IPlayerModel playerModel, ITcpClientService tcpClientService)
     {
         this.view = view;
         this.playerModel = playerModel;
+
+        this.tcpClientService = tcpClientService;
 
         if (view is IUpgradeViewUnityExtension unityView)
         {
@@ -70,6 +74,8 @@ public class UpgradePresenter
     {
         playerModel.Health = (byte)(Settings.Health + playerModel.Upgrades[UpgradeType.Health] * 15);
         playerModel.Healing = (byte)(Settings.Health + playerModel.Upgrades[UpgradeType.Health] * 2);
+
+        tcpClientService.Send(ITcpClientService.Connections.Server, new PlayerReady(playerModel.Id.ToString(), playerModel.Health, playerModel.WeaponType, playerModel.Upgrades[UpgradeType.Damping], PacketAction.Generic));
     }
 
     public void Quit()

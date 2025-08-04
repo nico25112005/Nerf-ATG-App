@@ -2,6 +2,7 @@
 using Game;
 using System.Numerics;
 using System.Timers;
+using System.Linq;
 
 
 public class GpsPresenter
@@ -78,9 +79,12 @@ public class GpsPresenter
                 }
             }
 
-            foreach (PlayerStatus playerStatus in gameModel.playerInfo.Values)
+            foreach (IPlayerInfo playerInfo in gameModel.playerInfo.Values) // Todo: error
             {
-                UpdateMapPoints(null, playerStatus);
+                if (playerInfo is PlayerStatus)
+                {
+                    UpdateMapPoints(null, (IMapPoint)playerInfo);
+                }
             }
         }
 
@@ -96,7 +100,7 @@ public class GpsPresenter
     {
         MapPointType type;
 
-        if(playerStatus.Index >= 10)
+        if (playerStatus.Index >= 10)
             type = (MapPointType)playerStatus.Index;
         else
         {
@@ -116,7 +120,7 @@ public class GpsPresenter
     {
         if (ability == Abilitys.GPSLocate)
         {
-            if(radarAbilityTimer == null)
+            if (radarAbilityTimer == null)
             {
                 radarAbilityTimer = new Timer(5000);
                 radarAbilityTimer.AutoReset = true;
@@ -130,7 +134,7 @@ public class GpsPresenter
     private void RadarAbilityElapsed()
     {
         playerModel.AbilityActive = false;
-        foreach(PlayerStatus playerStatus in gameModel.mapPoints.Values)
+        foreach (PlayerStatus playerStatus in gameModel.mapPoints.Values)
         {
             if (playerStatus.Index != (byte)playerModel.Team)
             {
@@ -149,13 +153,16 @@ public class GpsPresenter
             baseRefillTimer.Elapsed += (s, e) => Refill();
         }
 
-        if (GPS.IsWithinRadius(gps, gameModel.baseLocation[playerModel.Team], Game.Settings.BaseRadius))
+        if (gameModel.baseLocation.ContainsKey(playerModel.Team))
         {
-            baseRefillTimer.Start();
-        }
-        else
-        {
-            baseRefillTimer.Stop();
+            if (GPS.IsWithinRadius(gps, gameModel.baseLocation[playerModel.Team], Game.Settings.BaseRadius))
+            {
+                baseRefillTimer.Start();
+            }
+            else
+            {
+                baseRefillTimer.Stop();
+            }
         }
 
     }

@@ -65,6 +65,7 @@ public class SelectGameView : MonoBehaviour, ISelectGameView
     private void AddGame(GameInfo gameInfo)
     {
         GameObject prefabInstance = Instantiate(registry.GetElement("GamePrefab"), registry.GetElement("GameList").transform);
+        prefabInstance.name = gameInfo.GameId;
         prefabInstance.transform.Find("DeviceName").GetComponent<Text>().text = gameInfo.GameName;
         prefabInstance.transform.Find("Playercount").GetComponent<Text>().text = $"{gameInfo.PlayerCount}/{gameInfo.MaxPlayer}";
         prefabInstance.transform.Find("Gamemode").GetComponent<Text>().text = ((GameType)gameInfo.GameType).ToAbbreviation();
@@ -78,7 +79,7 @@ public class SelectGameView : MonoBehaviour, ISelectGameView
 
     private void RemoveGame(GameInfo gameInfo)
     {
-        Destroy(registry.GetElement("GameList").transform.Find(gameInfo.GameName).gameObject);
+        Destroy(registry.GetElement("GameList").transform.Find(gameInfo.GameId).gameObject);
     }
 
     public void Join()

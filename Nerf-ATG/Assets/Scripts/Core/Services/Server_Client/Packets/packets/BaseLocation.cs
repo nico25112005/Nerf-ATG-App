@@ -33,7 +33,7 @@ public class BaseLocation : Packet<PacketType>
 
     public override string ToString()
     {
-        return $"PlayerStatus{{teamIndex={TeamIndex}, longitude={Longitude}, latitude={Latitude}}}";
+        return $"BaseLocation{{teamIndex={TeamIndex}, longitude={Longitude}, latitude={Latitude}}}";
     }
 }
 

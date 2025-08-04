@@ -12,13 +12,13 @@ public class MapPoint : Packet<PacketType>, IMapPoint
 
     public MapPoint(byte[] bytes) : base(bytes) { }
 
-    public MapPoint(string DisplayName, MapPointType team, double longitude, double latitude, PacketAction action)
+    public MapPoint(string DisplayName, MapPointType team, GPS gps, PacketAction action)
         : base(PacketType.MapPoint, action)
     {
         this.Name = DisplayName;
         this.Index = (byte)team;
-        this.Longitude = longitude;
-        this.Latitude = latitude;
+        this.Longitude = gps.Longitude;
+        this.Latitude = gps.Latitude;
     }
 
     protected override void ReadPayload(byte[] bytes, byte offset)

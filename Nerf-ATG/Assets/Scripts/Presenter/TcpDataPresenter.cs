@@ -25,11 +25,10 @@ namespace Assets.Scripts.Presenter
 
         private void RecivedData(object sender, byte[] bytes)
         {
-            if((ITcpClientService.Connections)sender == ITcpClientService.Connections.Server)
+            if ((ITcpClientService.Connections)sender == ITcpClientService.Connections.Server)
             {
                 Debug.Log("Recived new Packet: " + (PacketType)bytes[0]);
                 Debug.Log(string.Join("", bytes));
-                Debug.Log(Thread.CurrentThread.Name);
                 switch ((PacketType)bytes[0])
                 {
                     case PacketType.GameInfo: mainThreadExecutor.Execute(() => HandleGameInfo(new GameInfo(bytes))); break;
@@ -39,6 +38,7 @@ namespace Assets.Scripts.Presenter
                     case PacketType.BaseLocation: mainThreadExecutor.Execute(() => HandleBaseLocation(new BaseLocation(bytes))); break;
                     case PacketType.ReadyPlayerCount: mainThreadExecutor.Execute(() => HandleReadyPlayerCount(new ReadyPlayerCount(bytes))); break;
                     case PacketType.MapPoint: mainThreadExecutor.Execute(() => HandleMapPoint(new MapPoint(bytes))); break;
+                    case PacketType.SwitchTeam: mainThreadExecutor.Execute(() => HandleSwitchTeam(new SwitchTeam(bytes))); break;
                 }
             }
         }
@@ -48,7 +48,6 @@ namespace Assets.Scripts.Presenter
         private void HandleGameInfo(GameInfo gameInfo)
         {
             Debug.Log(gameInfo);
-            Debug.Log(Thread.CurrentThread.Name);
             switch (gameInfo.Action)
             {
                 case PacketAction.Add: serverModel.AddActiveGame(gameInfo); break;
@@ -60,8 +59,15 @@ namespace Assets.Scripts.Presenter
         private void HandleGameStarted(GameStarted gameStarted)
         {
             Debug.Log(gameStarted);
-            gameModel.GameStart();
-            gameModel.teamLeader[(Team)gameStarted.TeamIndex] = (gameStarted.LeaderId, gameStarted.LeaderName);
+            gameModel.teamLeader.TryAdd((Team)gameStarted.TeamIndex, (gameStarted.LeaderId, gameStarted.LeaderName));
+            Debug.Log("Team is the same: " + (playerModel.Team == (Team)gameStarted.TeamIndex));
+            Debug.Log("Team: " + playerModel.Team);
+            Debug.Log("TeamIndex: " + (Team)gameStarted.TeamIndex);
+            if (playerModel.Team == (Team)gameStarted.TeamIndex)
+            {
+                Debug.Log("Started");
+                gameModel.GameStart();
+            }
         }
 
         private void HandlePlayerInfo(PlayerInfo playerInfo)
@@ -69,7 +75,13 @@ namespace Assets.Scripts.Presenter
             Debug.Log(playerInfo);
             switch (playerInfo.Action)
             {
-                case PacketAction.Add or PacketAction.Update: gameModel.UpdatePlayerInfo(playerInfo); break;
+                case PacketAction.Add or PacketAction.Update:
+                    gameModel.UpdatePlayerInfo(playerInfo);
+                    if(playerInfo.PlayerId == playerModel.Id.ToString()[..8])
+                    {
+                        playerModel.Team = (Team)playerInfo.Index;
+                    }
+                    break;
                 case PacketAction.Remove: gameModel.RemovePlayerInfo(playerInfo.PlayerId); break;
             }
         }
@@ -82,7 +94,7 @@ namespace Assets.Scripts.Presenter
                 case PacketAction.Add or PacketAction.Update:
                     gameModel.UpdatePlayerInfo(playerStatus);
 
-                    if((Team) playerStatus.Index == playerModel.Team || playerModel.AbilityActive)
+                    if ((Team)playerStatus.Index == playerModel.Team || playerModel.AbilityActive)
                     {
                         playerStatus.Action = PacketAction.Add;
                         gameModel.UpdateMapPoints(playerStatus);
@@ -101,8 +113,13 @@ namespace Assets.Scripts.Presenter
         {
             Debug.Log(baseLocation);
             gameModel.AddBaseLocation((Team)baseLocation.TeamIndex, new GPS(baseLocation.Longitude, baseLocation.Latitude));
-        }
 
+            if(playerModel.Team == (Team)baseLocation.TeamIndex)
+            {
+                gameModel.UpdateMapPoints(new MapPoint("Base", MapPointType.Base, new GPS(baseLocation.Longitude, baseLocation.Latitude), PacketAction.Add));
+            }
+        }
+        
         private void HandleReadyPlayerCount(ReadyPlayerCount readyPlayerCount)
         {
             Debug.Log(readyPlayerCount);
@@ -112,11 +129,16 @@ namespace Assets.Scripts.Presenter
         private void HandleMapPoint(MapPoint mapPoint)
         {
             Debug.Log(mapPoint);
-            switch(mapPoint.Action)
+            switch (mapPoint.Action)
             {
-                case PacketAction.Add : gameModel.UpdateMapPoints(mapPoint); break;
+                case PacketAction.Add: gameModel.UpdateMapPoints(mapPoint); break;
                 case PacketAction.Remove: gameModel.RemoveMapPoint(mapPoint.Name); break;
             }
+        }
+
+        private void HandleSwitchTeam(SwitchTeam switchTeam)
+        {
+            playerModel.Team = (playerModel.Team == Team.Red) ? Team.Blue : Team.Red;
         }
 
         // ---------- Server Handlers End ----------

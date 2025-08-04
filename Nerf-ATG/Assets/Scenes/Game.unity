@@ -2027,7 +2027,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 40
+    m_FontSize: 35
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 3
@@ -2038,9 +2038,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1.5
-  m_Text: Please go to a place where you would like to set your base. You can then
-    heal yourself and replenish your ammunition within a radius of 5m around your
-    base.
+  m_Text: Empty
 --- !u!222 &1083581321
 CanvasRenderer:
   m_ObjectHideFlags: 0

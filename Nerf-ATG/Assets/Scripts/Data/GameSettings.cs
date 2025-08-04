@@ -128,6 +128,12 @@ namespace Game
         public static byte Coins = 25;
         public static byte Healing = 4;
         public static byte Health = 100;
+        
+        public static string ServerIP = "10.99.140.218";
+        public static int ServerPort = 25115;
+
+        public static string EspIp = "hi";
+        public static int EspPort = 1234;
 
         public static Dictionary<UpgradeType, UpgradeInfo> upgradeInfo = new()
         {

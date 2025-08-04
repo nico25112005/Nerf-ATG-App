@@ -1,3 +1,4 @@
+using Game;
 using System.Collections.Generic;
 
 public class MenuPresenter
@@ -33,7 +34,7 @@ public class MenuPresenter
     public void ConnectToServer(string name)
     {
         model.Name = name;
-        tcpClientService.Connect(ITcpClientService.Connections.Server, "192.168.1.189", 25115);
+        tcpClientService.Connect(ITcpClientService.Connections.Server, Settings.ServerIP, Settings.ServerPort);
 
     }
 }
