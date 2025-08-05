@@ -20,8 +20,8 @@ public interface ITcpClientService
 
     void CloseAll();
 
-    event EventHandler<bool> Connected;
-    event EventHandler<byte[]> dataReceived;
+    event EventHandler<bool> ConnectionStatusChanged;
+    event EventHandler<byte[]> DataReceived;
 
     void imitateReceive(Connections connectionId, byte[] data);
 }

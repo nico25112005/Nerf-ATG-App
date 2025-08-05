@@ -21,7 +21,7 @@ public interface IGameModel
 
     IReadOnlyDictionary<string, IPlayerInfo> playerInfo { get; }
 
-    void UpdatePlayerInfo(IPlayerInfo playerInfo);
+    void AddOrUpdatePlayerInfo(IPlayerInfo playerInfo);
     void RemovePlayerInfo(string playerID);
 
     Dictionary<Team, (string, string)> teamLeader { get; set; }
@@ -31,7 +31,7 @@ public interface IGameModel
 
     IReadOnlyDictionary<string, IMapPoint> mapPoints { get; }
 
-    void UpdateMapPoints(IMapPoint mapPoint);
+    void AddOrUpdateMapPoints(IMapPoint mapPoint);
     void RemoveMapPoint(string Name);
 
 }

@@ -80,8 +80,17 @@ public class MenuView : MonoBehaviour, IMenuView
         else
         {
             presenter.ConnectToServer(registry.GetElement("Name").GetComponent<InputField>().text);
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
     }
 
+
+    public void LoadNextScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+    }
+
+    public void OnDestroy()
+    {
+        presenter.Dispose();
+    }
 }

@@ -20,7 +20,7 @@ namespace Assets.Scripts.Presenter
             this.tcpClientService = tcpClientService;
             this.mainThreadExecutor = mainThreadExecutor;
 
-            this.tcpClientService.dataReceived += RecivedData;
+            this.tcpClientService.DataReceived += RecivedData;
         }
 
         private void RecivedData(object sender, byte[] bytes)
@@ -50,8 +50,7 @@ namespace Assets.Scripts.Presenter
             Debug.Log(gameInfo);
             switch (gameInfo.Action)
             {
-                case PacketAction.Add: serverModel.AddActiveGame(gameInfo); break;
-                case PacketAction.Update: serverModel.UpdateActiveGame(gameInfo); break;
+                case PacketAction.Add or PacketAction.Update: serverModel.AddOrUpdateActiveGame(gameInfo); break;
                 case PacketAction.Remove: serverModel.RemoveActiveGame(gameInfo); break;
             }
         }
@@ -76,7 +75,7 @@ namespace Assets.Scripts.Presenter
             switch (playerInfo.Action)
             {
                 case PacketAction.Add or PacketAction.Update:
-                    gameModel.UpdatePlayerInfo(playerInfo);
+                    gameModel.AddOrUpdatePlayerInfo(playerInfo);
                     if(playerInfo.PlayerId == playerModel.Id.ToString()[..8])
                     {
                         playerModel.Team = (Team)playerInfo.Index;
@@ -92,12 +91,12 @@ namespace Assets.Scripts.Presenter
             switch (playerStatus.Action)
             {
                 case PacketAction.Add or PacketAction.Update:
-                    gameModel.UpdatePlayerInfo(playerStatus);
+                    gameModel.AddOrUpdatePlayerInfo(playerStatus);
 
                     if ((Team)playerStatus.Index == playerModel.Team || playerModel.AbilityActive)
                     {
                         playerStatus.Action = PacketAction.Add;
-                        gameModel.UpdateMapPoints(playerStatus);
+                        gameModel.AddOrUpdateMapPoints(playerStatus);
                     }
 
                     break;
@@ -116,7 +115,7 @@ namespace Assets.Scripts.Presenter
 
             if(playerModel.Team == (Team)baseLocation.TeamIndex)
             {
-                gameModel.UpdateMapPoints(new MapPoint("Base", MapPointType.Base, new GPS(baseLocation.Longitude, baseLocation.Latitude), PacketAction.Add));
+                gameModel.AddOrUpdateMapPoints(new MapPoint("Base", MapPointType.Base, new GPS(baseLocation.Longitude, baseLocation.Latitude), PacketAction.Add));
             }
         }
         
@@ -131,7 +130,7 @@ namespace Assets.Scripts.Presenter
             Debug.Log(mapPoint);
             switch (mapPoint.Action)
             {
-                case PacketAction.Add: gameModel.UpdateMapPoints(mapPoint); break;
+                case PacketAction.Add: gameModel.AddOrUpdateMapPoints(mapPoint); break;
                 case PacketAction.Remove: gameModel.RemoveMapPoint(mapPoint.Name); break;
             }
         }

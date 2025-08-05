@@ -33,15 +33,15 @@ public class SelectGamePresenter
     {
         if (!string.IsNullOrEmpty(gameName))
         {
-            tcpClientService.Send(ITcpClientService.Connections.Server, new JoinGame(playerModel.Id.ToString(), gameName, PacketAction.Generic));
-            gameModel.gameInfo = serverModel.ActiveGames.First(g => g.GameName == gameName);
+            gameModel.gameInfo = serverModel.ActiveGames.First(g => g.Value.GameName == gameName).Value;
+            tcpClientService.Send(ITcpClientService.Connections.Server, new JoinGame(playerModel.Id.ToString(), gameModel.gameInfo.GameId, PacketAction.Generic));
         }
     }
 
     public void CreateGame(string gameName, GameType gameType)
     {       
         tcpClientService.Send(ITcpClientService.Connections.Server, new CreateGame(playerModel.Id.ToString(), gameType, gameName, 16, PacketAction.Generic));
-        serverModel.AddActiveGame(new GameInfo(gameType, playerModel.Id.ToString(), gameName, 1, 16, PacketAction.Generic));
+        serverModel.AddOrUpdateActiveGame(new GameInfo(gameType, playerModel.Id.ToString(), gameName, 0, 16, PacketAction.Generic));
         Join(gameName);
     }
 

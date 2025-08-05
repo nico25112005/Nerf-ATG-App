@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class FakeTcpClientService : ITcpClientService
 {
-    public event EventHandler<bool> Connected;
-    public event EventHandler<byte[]> dataReceived;
+    public event EventHandler<bool> ConnectionStatusChanged;
+    public event EventHandler<byte[]> DataReceived;
 
     public void Close(ITcpClientService.Connections connectionId)
     {
@@ -23,7 +23,7 @@ public class FakeTcpClientService : ITcpClientService
 
     public void imitateReceive(ITcpClientService.Connections connectionId, byte[] data)
     {
-        dataReceived?.Invoke(connectionId, data);
+        DataReceived?.Invoke(connectionId, data);
     }
 
     public void Send(ITcpClientService.Connections connectionId, Packet<PacketType> packet)

@@ -4,15 +4,17 @@ using System.Collections.Generic;
 public class MenuPresenter
 {
     private readonly IMenuView view;
-    private readonly IPlayerModel model;
+    private readonly IPlayerModel playerModel;
     private readonly ITcpClientService tcpClientService;
     //private readonly WiFiBridge wifiBridge = WiFiBridge.Instance;
 
-    public MenuPresenter(IMenuView view, IPlayerModel model, ITcpClientService tcpClientService)
+    public MenuPresenter(IMenuView view, IPlayerModel playerModel, ITcpClientService tcpClientService)
     {
         this.view = view;
-        this.model = model;
+        this.playerModel = playerModel;
         this.tcpClientService = tcpClientService;
+
+        this.tcpClientService.ConnectionStatusChanged += TcpConnectionChanged;
     }
 
 
@@ -33,8 +35,19 @@ public class MenuPresenter
 
     public void ConnectToServer(string name)
     {
-        model.Name = name;
+        playerModel.Name = name;
         tcpClientService.Connect(ITcpClientService.Connections.Server, Settings.ServerIP, Settings.ServerPort);
 
+    }
+
+    public void TcpConnectionChanged(object sender, bool connected)
+    {
+        tcpClientService.Send(ITcpClientService.Connections.Server, new ConnectToServer(playerModel.Id, playerModel.Name, PacketAction.Generic));
+        view.LoadNextScene();
+    }
+
+    public void Dispose()
+    {
+        tcpClientService.ConnectionStatusChanged -= TcpConnectionChanged;
     }
 }

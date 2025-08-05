@@ -17,8 +17,8 @@ internal class TcpClientService : ITcpClientService
 
     private readonly Dictionary<ITcpClientService.Connections, ConnectionData> connections = new();
 
-    public event EventHandler<bool> Connected;
-    public event EventHandler<byte[]> dataReceived;
+    public event EventHandler<bool> ConnectionStatusChanged;
+    public event EventHandler<byte[]> DataReceived;
 
     public void Connect(ITcpClientService.Connections connectionId, string ip, int port)
     {
@@ -40,6 +40,7 @@ internal class TcpClientService : ITcpClientService
                 Stream = stream,
                 Cancellation = cts
             };
+            ConnectionStatusChanged?.Invoke(this, true);
             Task.Run(() => ReceiveMessages(connectionId, cts.Token));
         }
         catch (Exception)
@@ -99,7 +100,7 @@ internal class TcpClientService : ITcpClientService
                     var packet = packetBuffer.GetRange(0, PacketSize).ToArray();
                     packetBuffer.RemoveRange(0, PacketSize);
 
-                    dataReceived?.Invoke(connectionId, packet);
+                    DataReceived?.Invoke(connectionId, packet);
                 }
             }
         }
@@ -142,6 +143,6 @@ internal class TcpClientService : ITcpClientService
 
     public void imitateReceive(ITcpClientService.Connections connectionId, byte[] data)
     {
-        dataReceived.Invoke(connectionId, data);
+        DataReceived.Invoke(connectionId, data);
     }
 }

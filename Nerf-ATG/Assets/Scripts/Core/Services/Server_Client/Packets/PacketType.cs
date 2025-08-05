@@ -3,6 +3,11 @@ public enum PacketType
 {
     Unknown,
 
+    ConnectToServer,
+    /*
+    UUID targetID
+    String playerName
+     */
     CreateGame,
     /*
     UUID playerID

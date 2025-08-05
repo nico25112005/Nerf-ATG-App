@@ -64,7 +64,7 @@ public class GameModel : IGameModel
 
     public IReadOnlyDictionary<string, IPlayerInfo> playerInfo => _playerInfo;
 
-    public void UpdatePlayerInfo(IPlayerInfo status)
+    public void AddOrUpdatePlayerInfo(IPlayerInfo status)
     {
         _playerInfo[status.PlayerId] = status;
         onPlayerInfoChanged?.Invoke(this, status);
@@ -85,7 +85,7 @@ public class GameModel : IGameModel
     private Dictionary<string, IMapPoint> _mapPoints = new();
     public IReadOnlyDictionary<string, IMapPoint> mapPoints => _mapPoints;
 
-    public void UpdateMapPoints(IMapPoint mapPoint)
+    public void AddOrUpdateMapPoints(IMapPoint mapPoint)
     {
         _mapPoints[mapPoint.Name] = mapPoint;
         onMapPointChanged?.Invoke(this, mapPoint);

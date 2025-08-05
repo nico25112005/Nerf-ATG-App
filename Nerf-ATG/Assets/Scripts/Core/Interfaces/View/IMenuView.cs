@@ -8,5 +8,6 @@ using System.Threading.Tasks;
 public interface IMenuView
 {
     void UpdateBlasterList(List<string> blasters);
+    void LoadNextScene();
 }
 

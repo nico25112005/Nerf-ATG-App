@@ -8,10 +8,9 @@ using System.Threading.Tasks;
 public interface IServerModel
 {
     event EventHandler<GameInfo> onActiveGamesChanged;
-    IEnumerable<GameInfo> ActiveGames { get; }
+    IReadOnlyDictionary<string, GameInfo> ActiveGames { get; }
 
-    void UpdateActiveGame(GameInfo gameInfo);
-    void AddActiveGame(GameInfo gameInfo);
+    void AddOrUpdateActiveGame(GameInfo gameInfo);
     void RemoveActiveGame(GameInfo gameInfo);
 
 }
