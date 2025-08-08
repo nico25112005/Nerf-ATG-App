@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-public class GameModel : IGameModel
+public class GameModel : IGameModel, IResetable
 {
     public event EventHandler<List<PlayerInfo>> onPlayersChanged;
 
@@ -12,9 +12,10 @@ public class GameModel : IGameModel
 
     public event EventHandler<byte> onReadyPlayerCountChanged;
 
-    public event EventHandler<EventArgs> onNewBaseLocation;
+    public event EventHandler<Team> onNewBaseLocation;
 
     public event EventHandler<IMapPoint> onMapPointChanged;
+
 
     private byte _readPlayerCount;
 
@@ -56,7 +57,7 @@ public class GameModel : IGameModel
     public void AddBaseLocation(Team team, GPS gps)
     {
         _baseLocation.TryAdd(team, gps);
-        onNewBaseLocation?.Invoke(this, EventArgs.Empty);
+        onNewBaseLocation?.Invoke(this, team);
     }
 
     //PlayerInfo
@@ -99,5 +100,23 @@ public class GameModel : IGameModel
             onMapPointChanged?.Invoke(this, _mapPoints[name]);
             _mapPoints.Remove(name);
         }
+    }
+
+
+    public void Reset()
+    {
+        onGameStart = null;
+        onPlayersChanged = null;
+        onPlayerInfoChanged = null;
+        onReadyPlayerCountChanged = null;
+        onNewBaseLocation = null;
+        onMapPointChanged = null;
+
+        _readPlayerCount = 0;
+        _gameInfo = null;
+        teamLeader = new();
+        _baseLocation = new();
+        _playerInfo = new();
+        _mapPoints = new();
     }
 }

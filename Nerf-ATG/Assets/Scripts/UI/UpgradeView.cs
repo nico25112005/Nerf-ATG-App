@@ -13,7 +13,7 @@ using Zenject.SpaceFighter;
 
 
 
-public class UpgradeView : MonoBehaviour, IUpgradeView, IUpgradeViewUnityExtension
+public class UpgradeView : MonoBehaviour, IUpgradeView, IUpgradeViewUnityExtension, IConnectionInfo
 {
     [Header("UI References")]
     [SerializeField]
@@ -24,6 +24,9 @@ public class UpgradeView : MonoBehaviour, IUpgradeView, IUpgradeViewUnityExtensi
 
     [Inject]
     private IPlayerModel playerModel;
+
+    [Inject]
+    private IServerModel serverModel;
 
     [Inject]
     private ITcpClientService tcpClientService;
@@ -38,7 +41,7 @@ public class UpgradeView : MonoBehaviour, IUpgradeView, IUpgradeViewUnityExtensi
         registry = gameObject.AddComponent<UIElementRegistry>();
         registry.RegisterElements(uiElements);
 
-        presenter = new UpgradePresenter(this, playerModel, tcpClientService);
+        presenter = new UpgradePresenter(this, playerModel, serverModel, tcpClientService);
 
         shop = new UnityItemShop(registry.GetElement("Container").transform, registry.GetElement("UpgradePrefab"));
 
@@ -97,6 +100,11 @@ public class UpgradeView : MonoBehaviour, IUpgradeView, IUpgradeViewUnityExtensi
     public void ShowToastMessage(string message, string icon)
     {
         ToastNotification.Show(message, icon);
+    }
+
+    public void UpdatePing(long ms)
+    {
+        registry.GetElement("Ping").GetComponent<Text>().text = ms + " ms";
     }
 
     //Buttons

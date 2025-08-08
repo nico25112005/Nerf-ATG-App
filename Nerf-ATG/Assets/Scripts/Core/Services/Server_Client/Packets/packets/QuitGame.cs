@@ -3,13 +3,13 @@ using System;
 using System.Text;
 
 
-public class ActivateAbility : Packet<PacketType>
+public class QuitGame : Packet<PacketType>
 {
     public string PlayerId { get; private set; }
 
-    public ActivateAbility(byte[] bytes) : base(bytes) { }
+    public QuitGame(byte[] bytes) : base(bytes) { }
 
-    public ActivateAbility(string playerId, PacketAction action) : base(PacketType.ActivateAbility, action)
+    public QuitGame(string playerId, PacketAction action) : base(PacketType.QuitGame, action)
     {
         this.PlayerId = playerId;
     }
@@ -26,6 +26,6 @@ public class ActivateAbility : Packet<PacketType>
 
     public override string ToString()
     {
-        return $"ActiveAbility: {{playerId='{PlayerId}'}}";
+        return $"QuitGame: {{playerId='{PlayerId}'}}";
     }
 }

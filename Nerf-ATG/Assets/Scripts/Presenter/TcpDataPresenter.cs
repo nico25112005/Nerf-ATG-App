@@ -1,6 +1,9 @@
 ﻿using Game.Enums;
 using UnityEngine;
-using System.Threading;
+using System.Timers;
+using System.Linq;
+using System.Diagnostics;
+using System;
 
 namespace Assets.Scripts.Presenter
 {
@@ -12,6 +15,9 @@ namespace Assets.Scripts.Presenter
         private readonly ITcpClientService tcpClientService;
         private readonly IMainThreadExecutor mainThreadExecutor;
 
+        Timer timer;
+        readonly Stopwatch stopwatch = new();
+
         public TcpDataPresenter(IPlayerModel playerModel, IGameModel gameModel, IServerModel serverModel, ITcpClientService tcpClientService, IMainThreadExecutor mainThreadExecutor)
         {
             this.playerModel = playerModel;
@@ -21,14 +27,15 @@ namespace Assets.Scripts.Presenter
             this.mainThreadExecutor = mainThreadExecutor;
 
             this.tcpClientService.DataReceived += RecivedData;
+            this.tcpClientService.ConnectionStatusChanged += ConnectionChanged;
         }
 
         private void RecivedData(object sender, byte[] bytes)
         {
             if ((ITcpClientService.Connections)sender == ITcpClientService.Connections.Server)
             {
-                Debug.Log("Recived new Packet: " + (PacketType)bytes[0]);
-                Debug.Log(string.Join("", bytes));
+                UnityEngine.Debug.Log("Recived new Packet: " + (PacketType)bytes[0]);
+                //Debug.Log(string.Join("|", bytes.Select(b => b.ToString("D3"))));
                 switch ((PacketType)bytes[0])
                 {
                     case PacketType.GameInfo: mainThreadExecutor.Execute(() => HandleGameInfo(new GameInfo(bytes))); break;
@@ -39,15 +46,54 @@ namespace Assets.Scripts.Presenter
                     case PacketType.ReadyPlayerCount: mainThreadExecutor.Execute(() => HandleReadyPlayerCount(new ReadyPlayerCount(bytes))); break;
                     case PacketType.MapPoint: mainThreadExecutor.Execute(() => HandleMapPoint(new MapPoint(bytes))); break;
                     case PacketType.SwitchTeam: mainThreadExecutor.Execute(() => HandleSwitchTeam(new SwitchTeam(bytes))); break;
+                    case PacketType.ServerMessage: mainThreadExecutor.Execute(() => HandleServerMessage(new ServerMessage(bytes))); break;
+                    case PacketType.QuitGame: mainThreadExecutor.Execute(() => GameManager.GetInstance().ResetGame()); break;
+                    case PacketType.Ping: PingRecived(); break;
                 }
             }
+        }
+
+        private void ConnectionChanged(object sender, bool connected)
+        {
+            if((ITcpClientService.Connections)sender == ITcpClientService.Connections.Server)
+            {
+                if (connected == true)
+                {
+                    timer = new Timer(1000);
+                    timer.AutoReset = true;
+                    timer.Elapsed += (s, e) =>
+                    {
+                        tcpClientService.Send(ITcpClientService.Connections.Server, new Ping(playerModel.Id.ToString(), PacketAction.Generic));
+                        stopwatch.Restart();
+                    };
+
+                    timer.Start();   
+                }
+                else
+                {
+                    timer.Stop();
+                    timer.Dispose();
+
+                    stopwatch.Stop();
+                }
+            }
+            
+        }
+
+        private void PingRecived()
+        {
+            stopwatch.Stop();
+            long ping = stopwatch.ElapsedMilliseconds;
+
+            mainThreadExecutor.Execute(() => serverModel.Ping(ping));
+
+            stopwatch.Reset();
         }
 
         // ---------- Server Handlers ----------
 
         private void HandleGameInfo(GameInfo gameInfo)
         {
-            Debug.Log(gameInfo);
             switch (gameInfo.Action)
             {
                 case PacketAction.Add or PacketAction.Update: serverModel.AddOrUpdateActiveGame(gameInfo); break;
@@ -57,26 +103,20 @@ namespace Assets.Scripts.Presenter
 
         private void HandleGameStarted(GameStarted gameStarted)
         {
-            Debug.Log(gameStarted);
             gameModel.teamLeader.TryAdd((Team)gameStarted.TeamIndex, (gameStarted.LeaderId, gameStarted.LeaderName));
-            Debug.Log("Team is the same: " + (playerModel.Team == (Team)gameStarted.TeamIndex));
-            Debug.Log("Team: " + playerModel.Team);
-            Debug.Log("TeamIndex: " + (Team)gameStarted.TeamIndex);
             if (playerModel.Team == (Team)gameStarted.TeamIndex)
             {
-                Debug.Log("Started");
                 gameModel.GameStart();
             }
         }
 
         private void HandlePlayerInfo(PlayerInfo playerInfo)
         {
-            Debug.Log(playerInfo);
             switch (playerInfo.Action)
             {
                 case PacketAction.Add or PacketAction.Update:
                     gameModel.AddOrUpdatePlayerInfo(playerInfo);
-                    if(playerInfo.PlayerId == playerModel.Id.ToString()[..8])
+                    if (playerInfo.PlayerId == playerModel.Id.ToString()[..8])
                     {
                         playerModel.Team = (Team)playerInfo.Index;
                     }
@@ -87,16 +127,18 @@ namespace Assets.Scripts.Presenter
 
         private void HandlePlayerStatus(PlayerStatus playerStatus)
         {
-            Debug.Log(playerStatus);
             switch (playerStatus.Action)
             {
                 case PacketAction.Add or PacketAction.Update:
+
                     gameModel.AddOrUpdatePlayerInfo(playerStatus);
 
                     if ((Team)playerStatus.Index == playerModel.Team || playerModel.AbilityActive)
                     {
-                        playerStatus.Action = PacketAction.Add;
-                        gameModel.AddOrUpdateMapPoints(playerStatus);
+                        if (playerStatus.PlayerId != playerModel.Id.ToString()[..8])
+                        {
+                            gameModel.AddOrUpdateMapPoints(playerStatus);
+                        }
                     }
 
                     break;
@@ -110,24 +152,21 @@ namespace Assets.Scripts.Presenter
 
         private void HandleBaseLocation(BaseLocation baseLocation)
         {
-            Debug.Log(baseLocation);
             gameModel.AddBaseLocation((Team)baseLocation.TeamIndex, new GPS(baseLocation.Longitude, baseLocation.Latitude));
 
-            if(playerModel.Team == (Team)baseLocation.TeamIndex)
+            if (playerModel.Team == (Team)baseLocation.TeamIndex)
             {
                 gameModel.AddOrUpdateMapPoints(new MapPoint("Base", MapPointType.Base, new GPS(baseLocation.Longitude, baseLocation.Latitude), PacketAction.Add));
             }
         }
-        
+
         private void HandleReadyPlayerCount(ReadyPlayerCount readyPlayerCount)
         {
-            Debug.Log(readyPlayerCount);
             gameModel.readyPlayerCount = readyPlayerCount.ReadyPlayers;
         }
 
         private void HandleMapPoint(MapPoint mapPoint)
         {
-            Debug.Log(mapPoint);
             switch (mapPoint.Action)
             {
                 case PacketAction.Add: gameModel.AddOrUpdateMapPoints(mapPoint); break;
@@ -139,6 +178,13 @@ namespace Assets.Scripts.Presenter
         {
             playerModel.Team = (playerModel.Team == Team.Red) ? Team.Blue : Team.Red;
         }
+
+        private void HandleServerMessage(ServerMessage serverMessage)
+        {
+            ToastNotification.Show(serverMessage.Message, "alert");
+        }
+
+
 
         // ---------- Server Handlers End ----------
 

@@ -40,7 +40,7 @@ public enum PacketType
     WeaponType type (int)
     float damping 0 / 50 / 100 %
     */
-    ActiveAbility,
+    ActivateAbility,
     /*
     UUID playerID
     */
@@ -89,4 +89,14 @@ public enum PacketType
     double longitude
     double latitude
     */
+    ServerMessage,
+    /*
+    string message
+    */
+    Ping,
+    /*
+    string playerId
+    */
+    QuitGame,
+
 }

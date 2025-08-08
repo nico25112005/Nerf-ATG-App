@@ -13,6 +13,8 @@ internal class TcpClientService : ITcpClientService
         public TcpClient Client;
         public NetworkStream Stream;
         public CancellationTokenSource Cancellation;
+        public object SendLock = new();
+
     }
 
     private readonly Dictionary<ITcpClientService.Connections, ConnectionData> connections = new();
@@ -40,7 +42,7 @@ internal class TcpClientService : ITcpClientService
                 Stream = stream,
                 Cancellation = cts
             };
-            ConnectionStatusChanged?.Invoke(this, true);
+            ConnectionStatusChanged?.Invoke(connectionId, true);
             Task.Run(() => ReceiveMessages(connectionId, cts.Token));
         }
         catch (Exception)
@@ -64,7 +66,11 @@ internal class TcpClientService : ITcpClientService
                 {
                     byte[] data = new byte[ITcpClientService.PACKET_SIZE];
                     packet.ToBytes(data);
-                    conn.Stream.Write(data, 0, ITcpClientService.PACKET_SIZE);
+
+                    lock (conn.SendLock)
+                    { 
+                        conn.Stream.Write(data, 0, ITcpClientService.PACKET_SIZE);
+                    }
                 }
             }
             catch (Exception)
@@ -145,4 +151,10 @@ internal class TcpClientService : ITcpClientService
     {
         DataReceived.Invoke(connectionId, data);
     }
+
+    public void Reset()
+    {
+        CloseAll();
+    }
+
 }

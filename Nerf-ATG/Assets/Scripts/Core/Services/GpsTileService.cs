@@ -24,7 +24,6 @@ public class GpsTileService : MonoBehaviour, IGpsTileService
         }
 
         Instance = this;
-        DontDestroyOnLoad(this);
     }
 
 
@@ -71,7 +70,7 @@ public class GpsTileService : MonoBehaviour, IGpsTileService
         int x = (int)((gps.Longitude + 180.0) / 360.0 * n);
         int y = (int)((1.0 - Math.Log(Math.Tan(latRad) + 1.0 / Math.Cos(latRad)) / Math.PI) / 2.0 * n);
 
-        Debug.Log($"[GpsTileService] GpsToTileCoordinates: GPS({gps.Latitude}, {gps.Longitude}) -> Tile({x}, {y})");
+        //Debug.Log($"[GpsTileService] GpsToTileCoordinates: GPS({gps.Latitude}, {gps.Longitude}) -> Tile({x}, {y})");
         return new System.Numerics.Vector2(x, y);
     }
     public System.Numerics.Vector2 GpsToTilePosition(System.Numerics.Vector2 currentTile, GPS gps)
@@ -87,6 +86,11 @@ public class GpsTileService : MonoBehaviour, IGpsTileService
     public void SetMapSize(System.Numerics.Vector2 newMapSize)
     {
         mapSize = newMapSize;
-        Debug.Log($"[GpsTileService] MapSize gesetzt auf ({mapSize.X}, {mapSize.Y})");
+        //Debug.Log($"[GpsTileService] MapSize gesetzt auf ({mapSize.X}, {mapSize.Y})");
+    }
+
+    private void OnDestroy()
+    {
+        StopCoroutine(DownloadTileCoroutine(null, 0, 0));
     }
 }

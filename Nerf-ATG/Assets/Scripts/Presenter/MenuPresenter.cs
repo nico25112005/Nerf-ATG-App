@@ -42,7 +42,7 @@ public class MenuPresenter
 
     public void TcpConnectionChanged(object sender, bool connected)
     {
-        tcpClientService.Send(ITcpClientService.Connections.Server, new ConnectToServer(playerModel.Id, playerModel.Name, PacketAction.Generic));
+        tcpClientService.Send(ITcpClientService.Connections.Server, new ConnectToServer(playerModel.Id.ToString(), playerModel.Name, PacketAction.Generic));
         view.LoadNextScene();
     }
 

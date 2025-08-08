@@ -6,8 +6,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
 using System.Threading;
+using System.Collections;
 
-public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtension
+public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtension, IConnectionInfo
 {
     [Header("UI References")]
     [SerializeField]
@@ -24,10 +25,14 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
     private IGameModel gameModel;
 
     [Inject]
+    private IServerModel serverModel;
+
+    [Inject]
     private ITcpClientService tcpClientService;
 
     [Inject]
     private IMainThreadExecutor mainThreadExecutor;
+
 
     private IGpsTileService gpsTileService;
     private IGpsDataService gpsDataService;
@@ -56,7 +61,7 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
 
         gpsTileService.SetMapSize(new System.Numerics.Vector2(registry.GetElement("Map").GetComponent<RectTransform>().rect.width, registry.GetElement("Map").GetComponent<RectTransform>().rect.height));
 
-        gamePresenter = new GamePresenter(this, playerModel, gameModel, tcpClientService, mainThreadExecutor);
+        gamePresenter = new GamePresenter(this, playerModel, gameModel, serverModel, tcpClientService, mainThreadExecutor);
 
         gpsPresenter = new GpsPresenter(this, playerModel, gameModel, gpsTileService, gpsDataService, tcpClientService, mainThreadExecutor);
 
@@ -173,6 +178,7 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
 
     public void UpdateMapPoints(MapPointType mapPointType, IMapPoint mapPoint, System.Numerics.Vector2 markerOffset)
     {
+
         GameObject markerPrefab = mapPointType switch
         {
             MapPointType.Enemy => registry.GetElement("EnemyMarkerPrefab"),
@@ -197,6 +203,13 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
                 break;
         }
 
+        Debug.Log("-------------------------");
+        Debug.Log("MapPoints:");
+        foreach (Transform child in registry.GetElement("Map").transform.Find("Markers"))
+        {
+            Debug.Log(child.name);
+        }
+        Debug.Log("-------------------------");
     }
 
     private void AddMapPoint(IMapPoint mapPoint, GameObject markerPrefab, System.Numerics.Vector2 markerOffset)
@@ -214,7 +227,16 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
 
     private void RemoveMapPoint(string name)
     {
-        Destroy(registry.GetElement("Map").transform.Find("Markers").Find(name).gameObject);
+        if (registry.GetElement("Map").transform.Find("Markers").transform.Find(name) == null)
+        {
+            Debug.Log("Marker not found; Not deleted");
+        }
+        else
+        {
+            Debug.Log("Destroyed: " + name);
+            Destroy(registry.GetElement("Map").transform.Find("Markers").transform.Find(name).gameObject);
+        }
+
     }
 
 
@@ -240,17 +262,23 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
 
     public void DeactivateInformationPanel()
     {
-        registry.GetElement("InformationPanel").gameObject.SetActive(false);
+        registry.GetElement("InformationPanel").SetActive(false);
     }
 
     public void SetBaseLocationButtonVisable()
     {
-        registry.GetElement("SetBaseButton").gameObject.SetActive(true);
+        registry.GetElement("SetBaseButton").SetActive(true);
     }
 
     public void SetBaseInformationText(string text)
     {
         registry.GetElement("SetBaseInformation").GetComponent<Text>().text = text;
+    }
+
+    // Connection Info
+    public void UpdatePing(long ms)
+    {
+        registry.GetElement("Ping").GetComponent<Text>().text = ms + " ms";
     }
 
     //Buttons
@@ -263,8 +291,31 @@ public class GameView : MonoBehaviour, IGameView, IGPSMap, IGameViewUnityExtensi
     public void SetBaseLocation()
     {
         gpsPresenter.SetBaseLocation();
-        registry.GetElement("SetBaseLocationButton").gameObject.SetActive(false);
+        registry.GetElement("SetBaseButton").SetActive(false);
     }
+
+
+    // Updateing PlayerStatus
+
+    public void StartSendingPlayerStatus()
+    {
+        StartCoroutine(UpdatePlayerStatus());
+    }
+
+    public void StopSendingPlayerStatus()
+    {
+        StopCoroutine(UpdatePlayerStatus());
+    }
+
+    private IEnumerator UpdatePlayerStatus()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(1f);
+            gamePresenter.UpdatePlayerStatus();
+        }
+    }
+
 
     public void Quit()
     {

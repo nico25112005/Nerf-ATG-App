@@ -10,6 +10,7 @@ public interface IGameView
     void SetBaseInformationText(string text);
     void SetBaseLocationButtonVisable();
     void ShowToastMessage(string message, string icon);
-
+    void StartSendingPlayerStatus();
+    void StopSendingPlayerStatus();
 
 }

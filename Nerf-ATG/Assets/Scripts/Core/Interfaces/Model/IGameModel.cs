@@ -11,7 +11,7 @@ public interface IGameModel
     event EventHandler<EventArgs> onGameStart;
     event EventHandler<IPlayerInfo> onPlayerInfoChanged;
     event EventHandler<byte> onReadyPlayerCountChanged;
-    event EventHandler<EventArgs> onNewBaseLocation;
+    event EventHandler<Team> onNewBaseLocation;
     event EventHandler<IMapPoint> onMapPointChanged;
     byte readyPlayerCount { get; set; }
 

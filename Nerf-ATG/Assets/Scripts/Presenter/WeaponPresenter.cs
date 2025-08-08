@@ -5,15 +5,17 @@ public class WeaponPresenter
 {
     private readonly IWeaponView view;
     private readonly IPlayerModel playerModel;
-    private readonly ITcpClientService tcpClientService;
+    private readonly IServerModel serverModel;
 
-    public WeaponPresenter(IWeaponView view, IPlayerModel playerModel, ITcpClientService tcpClientService)
+
+
+    public WeaponPresenter(IWeaponView view, IPlayerModel playerModel, IServerModel serverModel)
     {
         this.view = view;
 
         this.playerModel = playerModel;
+        this.serverModel = serverModel;
 
-        this.tcpClientService = tcpClientService;
 
         this.playerModel.OnCoinsChanged += UpdateCoins;
         this.playerModel.OnWeaponTypeChanged += UpdateWeaponIcon;
@@ -22,6 +24,8 @@ public class WeaponPresenter
         {
             unityView.UpdateTeam(playerModel.Team);
         }
+
+        serverModel.onPingChanged += UpdatePing;
     }
 
     public void UpdateWeaponIcon(object sender, WeaponType weaponType)
@@ -39,7 +43,13 @@ public class WeaponPresenter
         view.UpdateCoins(coins);
     }
 
-
+    public void UpdatePing(object sender, long ms)
+    {
+        if (view is IConnectionInfo connectionInfo)
+        {
+            connectionInfo.UpdatePing(ms);
+        }
+    }
 
     //Buttons
 
@@ -53,19 +63,19 @@ public class WeaponPresenter
         playerModel.Coins -= Settings.weaponInfo[playerModel.WeaponType].Price;
         playerModel.Ammo = Settings.weaponInfo[playerModel.WeaponType].AmmoPerMag;
         playerModel.MaxAmmo = Settings.weaponInfo[playerModel.WeaponType].MaxAmmo;
-
-
-        tcpClientService.Send(ITcpClientService.Connections.Server, new PlayerReady(playerModel.Id.ToString(), playerModel.Health, playerModel.WeaponType, playerModel.Upgrades[UpgradeType.Damping], PacketAction.Generic));
     }
 
     public void Quit()
     {
-
+        GameManager.GetInstance().ResetGame();
     }
 
     public void Dispose()
     {
         playerModel.OnCoinsChanged -= UpdateCoins;
         playerModel.OnWeaponTypeChanged -= UpdateWeaponIcon;
+
+        serverModel.onPingChanged -= UpdatePing;
+
     }
 }

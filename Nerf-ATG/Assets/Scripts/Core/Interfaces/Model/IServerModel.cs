@@ -8,10 +8,12 @@ using System.Threading.Tasks;
 public interface IServerModel
 {
     event EventHandler<GameInfo> onActiveGamesChanged;
+    event EventHandler<long> onPingChanged;
     IReadOnlyDictionary<string, GameInfo> ActiveGames { get; }
 
     void AddOrUpdateActiveGame(GameInfo gameInfo);
     void RemoveActiveGame(GameInfo gameInfo);
 
+    void Ping(long ms);
 }
 

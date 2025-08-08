@@ -129,7 +129,7 @@ namespace Game
         public static byte Healing = 4;
         public static byte Health = 100;
         
-        public static string ServerIP = "10.99.140.218";
+        public static string ServerIP = "192.168.1.189";
         public static int ServerPort = 25115;
 
         public static string EspIp = "hi";

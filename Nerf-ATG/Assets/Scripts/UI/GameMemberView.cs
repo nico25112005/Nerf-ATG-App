@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Zenject;
 
-public class GameMemberView : MonoBehaviour, IGameMemberView
+public class GameMemberView : MonoBehaviour, IGameMemberView, IConnectionInfo
 {
     [Header("UI References")]
     [SerializeField]
@@ -24,6 +24,9 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
     private IGameModel gameModel;
 
     [Inject]
+    private IServerModel serverModel;
+
+    [Inject]
     private ITcpClientService tcpClientService;
 
 
@@ -34,7 +37,7 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
         registry = gameObject.AddComponent<UIElementRegistry>();
         registry.RegisterElements(uiElements);
 
-        presenter = new GameMemberPresenter(this, playerModel, gameModel, tcpClientService);
+        presenter = new GameMemberPresenter(this, playerModel, gameModel, serverModel, tcpClientService);
 
         //StartCoroutine(SpawnPlayers(20));
     }
@@ -125,6 +128,11 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
         presenter.StartGame();
     }
 
+    public void UpdatePing(long ms)
+    {
+        registry.GetElement("Ping").GetComponent<Text>().text = ms + " ms";
+    }
+
     public void Quit()
     {
         presenter.Quit();
@@ -135,18 +143,4 @@ public class GameMemberView : MonoBehaviour, IGameMemberView
         presenter.Dispose();
     }
 
-    //Todo: remove testCode
-    /*
-    private IEnumerator SpawnPlayers(int amaount)
-    {
-        int count = 0;
-        while (count < amaount)
-        {
-
-            presenter.Spawn();
-            yield return new WaitForSeconds(1.5f);
-            count++;
-        }
-    }
-    */
 }

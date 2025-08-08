@@ -48,6 +48,6 @@ public class PlayerStatus : Packet<PacketType>, IPlayerInfo, IMapPoint
 
     public override string ToString()
     {
-        return $"PlayerStatus{{playerId='{PlayerId}', playerName='{Name}', teamIndex={Index}, longitude={Longitude}, latitude={Latitude}, health={Health}}}";
+        return $"PlayerStatus{{playerId='{PlayerId}', playerName='{Name}', teamIndex={Index}, longitude={Longitude}, latitude={Latitude}, health={Health}, action={Action}}}";
     }
 }

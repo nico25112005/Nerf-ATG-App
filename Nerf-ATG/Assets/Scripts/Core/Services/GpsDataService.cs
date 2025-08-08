@@ -20,14 +20,12 @@ public class GpsDataService : MonoBehaviour, IGpsDataService
         }
 
         Instance = this;
-        DontDestroyOnLoad(this);
     }
 
     public void StartGps()
     {
         if (gpsCoroutine != null)
             return;
-        Debug.Log("GpsRoutine started");
         gpsCoroutine = StartCoroutine(GpsRoutine());
     }
 
@@ -54,11 +52,22 @@ public class GpsDataService : MonoBehaviour, IGpsDataService
             yield return new WaitForSecondsRealtime(1f); // Warte auf Dialog
         }
 #endif
-
+        byte maxAttempts = 24;
         if (!Input.location.isEnabledByUser)
         {
             Debug.LogWarning("Location not enabled by user.");
-            yield break;
+            ToastNotification.Show("Please enable GPS", "error");
+            if(maxAttempts > 0)
+            {
+                maxAttempts--;
+                yield return new WaitForSecondsRealtime(1f);
+            }
+            else
+            {
+                GameManager.GetInstance().ResetGame();
+                yield break;
+            }
+                
         }
 
         Input.location.Start(0.5f, 0.5f);
@@ -78,7 +87,6 @@ public class GpsDataService : MonoBehaviour, IGpsDataService
         // Loop
         while (true)
         {
-            Debug.Log("Getting GPS Data");
             if (Input.location.status == LocationServiceStatus.Running)
             {
                 var data = Input.location.lastData;

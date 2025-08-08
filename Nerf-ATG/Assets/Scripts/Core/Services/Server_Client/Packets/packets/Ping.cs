@@ -3,13 +3,13 @@ using System;
 using System.Text;
 
 
-public class ActivateAbility : Packet<PacketType>
+public class Ping : Packet<PacketType>
 {
     public string PlayerId { get; private set; }
 
-    public ActivateAbility(byte[] bytes) : base(bytes) { }
+    public Ping(byte[] bytes) : base(bytes) { }
 
-    public ActivateAbility(string playerId, PacketAction action) : base(PacketType.ActivateAbility, action)
+    public Ping(string playerId, PacketAction action) : base(PacketType.Ping, action)
     {
         this.PlayerId = playerId;
     }
@@ -26,6 +26,6 @@ public class ActivateAbility : Packet<PacketType>
 
     public override string ToString()
     {
-        return $"ActiveAbility: {{playerId='{PlayerId}'}}";
+        return $"Ping: {{playerId='{PlayerId}'}}";
     }
 }

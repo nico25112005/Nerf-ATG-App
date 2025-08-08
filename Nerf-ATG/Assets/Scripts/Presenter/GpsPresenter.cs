@@ -110,7 +110,7 @@ public class GpsPresenter
                 type = MapPointType.Enemy;
         }
 
-        UnityEngine.Debug.Log(playerStatus.Name + ": MarkerType: " + type);
+        UnityEngine.Debug.Log("UpdateMapPoint: " + playerStatus.ToString());
 
         gpsMap.UpdateMapPoints(type, playerStatus, gpsTileService.GpsToTilePosition(currentTile, new GPS(playerStatus.Longitude, playerStatus.Latitude)));
 
@@ -120,13 +120,12 @@ public class GpsPresenter
     {
         if (ability == Abilitys.GPSLocate)
         {
-            if (radarAbilityTimer == null)
-            {
-                radarAbilityTimer = new Timer(5000);
-                radarAbilityTimer.AutoReset = true;
-                radarAbilityTimer.Elapsed += (s, e) => RadarAbilityElapsed();
-                radarAbilityTimer.Start();
-            }
+
+            radarAbilityTimer = new Timer(10000);
+            radarAbilityTimer.AutoReset = true;
+            radarAbilityTimer.Elapsed += (s, e) => RadarAbilityElapsed();
+
+            radarAbilityTimer.Start();
             playerModel.AbilityActive = true;
         }
     }
@@ -134,13 +133,24 @@ public class GpsPresenter
     private void RadarAbilityElapsed()
     {
         playerModel.AbilityActive = false;
-        foreach (PlayerStatus playerStatus in gameModel.mapPoints.Values)
+        foreach (IMapPoint mapPoint in gameModel.mapPoints.Values)
         {
-            if (playerStatus.Index != (byte)playerModel.Team)
+            UnityEngine.Debug.LogWarning("MapPoint: " + mapPoint.Name);
+
+            if (mapPoint is PlayerStatus playerStatus)
             {
-                gameModel.RemoveMapPoint(playerStatus.Name);
+                UnityEngine.Debug.LogWarning("MapPoint: " + playerStatus.Name);
+
+                if (playerStatus.Index != (byte)playerModel.Team)
+                {
+                    UnityEngine.Debug.LogWarning("Should have removed: " + playerStatus.Name);
+                    mainThreadExecutor.Execute(() => gameModel.RemoveMapPoint(playerStatus.Name));
+                }
             }
         }
+
+        radarAbilityTimer.Stop();
+        radarAbilityTimer.Dispose();
     }
 
 
@@ -169,17 +179,8 @@ public class GpsPresenter
 
     private void Refill()
     {
-        if (playerModel.Health + Settings.Healing <= Settings.Health)
-        {
-            MainThreadDispatcher.Execute(() => playerModel.Health += Settings.Healing);
-        }
-        else
-        {
-            if (playerModel.Health < Settings.Health)
-            {
-                MainThreadDispatcher.Execute(() => playerModel.Health = Settings.Health);
-            }
-        }
+        MainThreadDispatcher.Execute(() => playerModel.Health += Settings.Healing);
+
 
         if (playerModel.MaxAmmo + (Settings.weaponInfo[playerModel.WeaponType].MaxAmmo / 10) <= Settings.weaponInfo[playerModel.WeaponType].MaxAmmo)
         {
@@ -198,7 +199,7 @@ public class GpsPresenter
     // Buttons
     public void SetBaseLocation()
     {
-        tcpClientService.Send(ITcpClientService.Connections.Server, new BaseLocation(playerModel.Team, playerModel.Location, PacketAction.Add));
+        tcpClientService.Send(ITcpClientService.Connections.Server, new BaseLocation(playerModel.Id.ToString(), playerModel.Team, playerModel.Location, PacketAction.Add));
     }
 
 

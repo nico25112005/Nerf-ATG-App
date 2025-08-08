@@ -14,16 +14,19 @@ public class GamePresenter
 
     private readonly IPlayerModel playerModel;
     private readonly IGameModel gameModel;
+    private readonly IServerModel serverModel;
 
     private readonly ITcpClientService tcpClientService;
     private readonly IMainThreadExecutor mainThreadExecutor;
 
-    public GamePresenter(IGameView view, IPlayerModel playerModel, IGameModel gameModel, ITcpClientService tcpClientService, IMainThreadExecutor mainThreadExecutor)
+
+    public GamePresenter(IGameView view, IPlayerModel playerModel, IGameModel gameModel, IServerModel serverModel, ITcpClientService tcpClientService, IMainThreadExecutor mainThreadExecutor)
     {
         this.view = view;
 
         this.playerModel = playerModel;
         this.gameModel = gameModel;
+        this.serverModel = serverModel;
 
         this.tcpClientService = tcpClientService;
         this.mainThreadExecutor = mainThreadExecutor;
@@ -37,8 +40,15 @@ public class GamePresenter
 
         gameModel.onReadyPlayerCountChanged += UpdateInformationPanel;
         gameModel.onNewBaseLocation += NewBaseSet;
-        gameModel.onNewBaseLocation += (object sender, EventArgs e) => UnityEngine.Debug.LogWarning($"NewBaseSetEvent from: {sender} {e}");
 
+        serverModel.onPingChanged += UpdatePing;
+
+        Init();
+    }
+
+
+    private void Init()
+    {
         if (view is IGameViewUnityExtension unityView)
         {
             unityView.UpdateTeam(playerModel.Team);
@@ -47,16 +57,17 @@ public class GamePresenter
         }
 
         view.UpdateAbilityIcon(Settings.weaponInfo[playerModel.WeaponType].Ability, 1);
-        UpdateInformationPanel(this, 0);
-        playerModel.Health += 0;
-        playerModel.Ammo += 0;
-        playerModel.MaxAmmo += 0;
 
-        playerModel.Health -= 110;
+
+        UpdateHealthBar(this, playerModel.Health);
+        UpdateAmmoBar(this, playerModel.Ammo);
+        UpdateMaxAmmoBar(this, playerModel.MaxAmmo);
+        UpdateInformationPanel(this, 0);
     }
 
     public void UpdateHealthBar(object sender, byte health)
     {
+        UnityEngine.Debug.Log("Health: " + health);
         view.UpdateHealthBar(health, (byte)(Settings.Health + playerModel.Upgrades[UpgradeType.Health] * 15));
     }
 
@@ -72,24 +83,29 @@ public class GamePresenter
 
     public void SetBaseLocationButtonActive(object sender, GPS gps)
     {
-        if (gameModel.readyPlayerCount == gameModel.playerInfo.Count() && string.Equals(gameModel.teamLeader[playerModel.Team].Item1, playerModel.Id.ToString()))
+        if (gameModel.readyPlayerCount == gameModel.playerInfo.Count() && string.Equals(gameModel.teamLeader[playerModel.Team].Item1, playerModel.Id.ToString()[..8]))
         {
             view.SetBaseLocationButtonVisable();
             playerModel.OnLocationChanged -= SetBaseLocationButtonActive;
         }
     }
 
-    public void NewBaseSet(object sender, EventArgs e)
+    public void NewBaseSet(object sender, Team team)
     {
         UnityEngine.Debug.LogWarning($"NewBaseSetEvent: {sender}");
 
-        view.SetBaseInformationText($"Your Teamleader is: {gameModel.teamLeader[playerModel.Team].Item2}\n" +
-                   $"Waiting for the teamleaders to set their base: {gameModel.baseLocation.Count()}/{gameModel.teamLeader.Count()}\n" +
-                   $"Within a radius of {Game.Settings.BaseRadius} around your base, you can heal and replenish your ammunition.");
+        if (team == playerModel.Team)
+        {
+            view.SetBaseInformationText($"Your Teamleader is: {gameModel.teamLeader[playerModel.Team].Item2}\n" +
+                       $"Waiting for the teamleaders to set their base: {gameModel.baseLocation.Count()}/{gameModel.teamLeader.Count()}\n" +
+                       $"Within a radius of {Game.Settings.BaseRadius} around your base, you can heal and replenish your ammunition.");
+
+        }
 
         if (gameModel.baseLocation.Count() == gameModel.teamLeader.Count())
         {
             view.DeactivateInformationPanel();
+            view.StartSendingPlayerStatus();
             gameModel.onNewBaseLocation -= NewBaseSet;
         }
     }
@@ -100,13 +116,13 @@ public class GamePresenter
         if (readyPlayerCount < gameModel.playerInfo.Count())
         {
             UnityEngine.Debug.LogWarning($"Waiting: {sender}, Ready: {gameModel.readyPlayerCount}/{gameModel.playerInfo.Count()}");
-            
+
 
             view.SetBaseInformationText($"Waiting for all players to get ready\n\n Ready: {gameModel.readyPlayerCount}/{gameModel.playerInfo.Count()}");
         }
         else
         {
-            if (string.Equals(gameModel.teamLeader[playerModel.Team].Item1, playerModel.Id.ToString()))
+            if (string.Equals(gameModel.teamLeader[playerModel.Team].Item1, playerModel.Id.ToString()[..8]))
             {
                 UnityEngine.Debug.LogWarning($"teamleaderid: {gameModel.teamLeader[playerModel.Team].Item1}, playerid: {playerModel.Id}");
                 UnityEngine.Debug.LogWarning($"Teamleader: {sender}");
@@ -175,11 +191,22 @@ public class GamePresenter
         }
     }
 
-    private int count = 0;
+    public void UpdatePing(object sender, long ms)
+    {
+        if (view is IConnectionInfo connectionInfo)
+        {
+            connectionInfo.UpdatePing(ms);
+        }
+    }
 
     public void Quit()
     {
-        new VirtualPlayer(playerModel.Location, tcpClientService, mainThreadExecutor, 15, $"Player_{++count}");
+        GameManager.GetInstance().ResetGame();
+    }
+
+    public void UpdatePlayerStatus()
+    {
+        tcpClientService.Send(ITcpClientService.Connections.Server, new PlayerStatus(playerModel.Id.ToString(), playerModel.Name, playerModel.Team, playerModel.Location, playerModel.Health ,PacketAction.Update));
     }
 
     public void Dispose()
@@ -189,6 +216,10 @@ public class GamePresenter
         playerModel.OnMaxAmmoChanged -= UpdateMaxAmmoBar;
         playerModel.AbilityActivated -= HealthPackageAbility;
         playerModel.AbilityActivated -= RapidFireAbility;
+
+        view.StopSendingPlayerStatus();
+
+        serverModel.onPingChanged -= UpdatePing;
 
         if (timer != null)
         {

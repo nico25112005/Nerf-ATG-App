@@ -7,7 +7,7 @@ using Zenject;
 
 
 
-public class SelectGameView : MonoBehaviour, ISelectGameView
+public class SelectGameView : MonoBehaviour, ISelectGameView, IConnectionInfo
 {
 
 
@@ -67,7 +67,26 @@ public class SelectGameView : MonoBehaviour, ISelectGameView
         GameObject prefabInstance = Instantiate(registry.GetElement("GamePrefab"), registry.GetElement("GameList").transform);
         prefabInstance.name = gameInfo.GameId;
         prefabInstance.transform.Find("DeviceName").GetComponent<Text>().text = gameInfo.GameName;
-        prefabInstance.transform.Find("Playercount").GetComponent<Text>().text = $"{gameInfo.PlayerCount}/{gameInfo.MaxPlayer}";
+        Text playercount = prefabInstance.transform.Find("Playercount").GetComponent<Text>();
+        if(gameInfo.MaxPlayer == 0)
+        {
+            playercount.text = "Playing";
+            playercount.color = Color.green;
+            playercount.fontSize = 40;
+            playercount.fontStyle = FontStyle.Normal;
+
+        }
+        else if(gameInfo.PlayerCount == gameInfo.MaxPlayer)
+        {
+            playercount.text = "Full";
+            playercount.color = Color.red;
+            playercount.fontStyle = FontStyle.Normal;
+        }
+        else
+        {
+            playercount.text = $"{gameInfo.PlayerCount}/{gameInfo.MaxPlayer}";
+        }
+
         prefabInstance.transform.Find("Gamemode").GetComponent<Text>().text = ((GameType)gameInfo.GameType).ToAbbreviation();
         prefabInstance.GetComponent<Button>().onClick.AddListener(() => ButtonClick(prefabInstance.GetComponentInChildren<Text>()));
 
@@ -86,9 +105,6 @@ public class SelectGameView : MonoBehaviour, ISelectGameView
     {
 
         presenter.Join(registry.GetElement("GameConnection").GetComponent<Text>().text);
-
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
-
     }
 
     public void CreateGame()
@@ -112,9 +128,12 @@ public class SelectGameView : MonoBehaviour, ISelectGameView
 
 
             presenter.CreateGame(gameName, gameType);
-
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
+    }
+
+    public void UpdatePing(long ms)
+    {
+        registry.GetElement("Ping").GetComponent<Text>().text = ms.ToString() + " ms";
     }
 
     public void Quit()
@@ -127,6 +146,16 @@ public class SelectGameView : MonoBehaviour, ISelectGameView
     private void OnDestroy()
     {
         presenter.Dispose();
+    }
+
+    public void ShowToastMessage(string message, string icon)
+    {
+        ToastNotification.Show(message, icon);
+    }
+
+    public void LoadNextScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 
 }

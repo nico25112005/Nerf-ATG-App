@@ -8,25 +8,33 @@ using System.Linq;
 
 public class GameMemberPresenter
 {
-    IGameMemberView view;
-    IGameModel gameModel;
-    IPlayerModel playerModel;
-    ITcpClientService tcpClientService;
+    private readonly IGameMemberView view;
+    private readonly IGameModel gameModel;
+    private readonly IPlayerModel playerModel;
+    private readonly IServerModel serverModel;
+    private readonly ITcpClientService tcpClientService;
 
 
 
-    public GameMemberPresenter( IGameMemberView view, IPlayerModel playerModel, IGameModel gameModel, ITcpClientService tcpClientService)
+
+    public GameMemberPresenter( IGameMemberView view, IPlayerModel playerModel, IGameModel gameModel, IServerModel serverModel, ITcpClientService tcpClientService)
     {
         this.view = view;
-        this.gameModel = gameModel;
+
         this.playerModel = playerModel;
+        this.gameModel = gameModel;
+        this.serverModel = serverModel;
+
         this.tcpClientService = tcpClientService;
+
 
 
         gameModel.onPlayerInfoChanged += UpdateMemberList;
         gameModel.onGameStart += NextScene;
 
         EvalueateGameHost();
+
+        serverModel.onPingChanged += UpdatePing;
 
     }
 
@@ -63,21 +71,24 @@ public class GameMemberPresenter
         }
     }
 
-    public void Quit()
+    public void UpdatePing(object sender, long ms)
     {
-        //Todo: Global Quit
+        if (view is IConnectionInfo connectionInfo)
+        {
+            connectionInfo.UpdatePing(ms);
+        }
     }
 
-    public void Spawn()
+    public void Quit()
     {
-        byte[] playerInfoBytes = new byte[ITcpClientService.PACKET_SIZE];
-        CreateRandomData.CreatePlayerInfo().ToBytes(playerInfoBytes);
-        tcpClientService.imitateReceive(ITcpClientService.Connections.Server, playerInfoBytes);
+        GameManager.GetInstance().ResetGame();
     }
 
     public void Dispose()
     {
         gameModel.onPlayerInfoChanged -= UpdateMemberList;
         gameModel.onGameStart -= NextScene;
+
+        serverModel.onPingChanged -= UpdatePing;
     }
 }

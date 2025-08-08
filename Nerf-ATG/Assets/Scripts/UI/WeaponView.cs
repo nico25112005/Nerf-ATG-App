@@ -8,7 +8,7 @@ using Zenject;
 
 
 
-public class WeaponView : MonoBehaviour, IWeaponView, IWeaponViewUnityExtension
+public class WeaponView : MonoBehaviour, IWeaponView, IWeaponViewUnityExtension, IConnectionInfo
 {
     [Header("UI References")]
     [SerializeField]
@@ -22,8 +22,7 @@ public class WeaponView : MonoBehaviour, IWeaponView, IWeaponViewUnityExtension
     private IPlayerModel playerModel;
 
     [Inject]
-    private ITcpClientService tcpClientService;
-
+    private IServerModel serverModel;
 
     private IShop<GameObject> shop;
 
@@ -33,7 +32,7 @@ public class WeaponView : MonoBehaviour, IWeaponView, IWeaponViewUnityExtension
         registry = gameObject.AddComponent<UIElementRegistry>();
         registry.RegisterElements(uiElements);
 
-        presenter = new WeaponPresenter(this, playerModel, tcpClientService);
+        presenter = new WeaponPresenter(this, playerModel, serverModel);
 
         this.shop = new UnityItemShop(registry.GetElement("Container").transform, registry.GetElement("WeaponPrefab"));
 
@@ -57,6 +56,11 @@ public class WeaponView : MonoBehaviour, IWeaponView, IWeaponViewUnityExtension
     public void UpdateWeaponIcon(WeaponType weaponType)
     {
         registry.GetElement("Weapon").GetComponent<Image>().sprite = GameAssets.Instance.weapons[weaponType];
+    }
+
+    public void UpdatePing(long ms)
+    {
+        registry.GetElement("Ping").GetComponent<Text>().text = ms + " ms";
     }
 
     //Buttons
