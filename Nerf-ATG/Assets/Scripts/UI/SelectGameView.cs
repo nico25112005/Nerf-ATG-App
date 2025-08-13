@@ -42,6 +42,7 @@ public class SelectGameView : MonoBehaviour, ISelectGameView, IConnectionInfo
 
     public void UpdateGameList(GameInfo gameInfo)
     {
+        Debug.LogWarning($"View: Added game {gameInfo}");
 
         switch (gameInfo.Action)
         {
@@ -60,6 +61,10 @@ public class SelectGameView : MonoBehaviour, ISelectGameView, IConnectionInfo
                 AddGame(gameInfo);
                 break;
         }
+
+        Debug.Log($"GameCount: {registry.GetElement("GameList").transform.childCount}");
+
+
     }
 
     private void AddGame(GameInfo gameInfo)
@@ -68,7 +73,7 @@ public class SelectGameView : MonoBehaviour, ISelectGameView, IConnectionInfo
         prefabInstance.name = gameInfo.GameId;
         prefabInstance.transform.Find("DeviceName").GetComponent<Text>().text = gameInfo.GameName;
         Text playercount = prefabInstance.transform.Find("Playercount").GetComponent<Text>();
-        if(gameInfo.MaxPlayer == 0)
+        if (gameInfo.MaxPlayer == 0)
         {
             playercount.text = "Playing";
             playercount.color = Color.green;
@@ -76,7 +81,7 @@ public class SelectGameView : MonoBehaviour, ISelectGameView, IConnectionInfo
             playercount.fontStyle = FontStyle.Normal;
 
         }
-        else if(gameInfo.PlayerCount == gameInfo.MaxPlayer)
+        else if (gameInfo.PlayerCount == gameInfo.MaxPlayer)
         {
             playercount.text = "Full";
             playercount.color = Color.red;
@@ -98,7 +103,14 @@ public class SelectGameView : MonoBehaviour, ISelectGameView, IConnectionInfo
 
     private void RemoveGame(GameInfo gameInfo)
     {
-        Destroy(registry.GetElement("GameList").transform.Find(gameInfo.GameId).gameObject);
+        if (registry.GetElement("GameList").transform.Find(gameInfo.GameId) != null)
+        {
+            Destroy(registry.GetElement("GameList").transform.Find(gameInfo.GameId).gameObject);
+        }
+        else
+        {
+            Debug.LogWarning("Game not found; Not deleted: " + gameInfo);
+        }
     }
 
     public void Join()

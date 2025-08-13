@@ -31,9 +31,14 @@ public class PersistentMainManager : MonoBehaviour
     {
         Debug.Log("Services wurden initialisiert.");
 
-        GameManager.InstallObjects(playerModel, gameModel, serverModel, tcpClientService);
         new TcpDataPresenter(playerModel, gameModel, serverModel, tcpClientService, mainThreadExecutor);
         
     }
 
+    private void OnApplicationQuit()
+    {
+        if(gameModel.gameInfo != null)
+            tcpClientService.Send(ITcpClientService.Connections.Server, new QuitGame(playerModel.Id.ToString(), PacketAction.Generic));
+        tcpClientService.CloseAll();
+    }
 }

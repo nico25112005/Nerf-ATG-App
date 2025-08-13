@@ -7,15 +7,18 @@ public class WeaponPresenter
     private readonly IPlayerModel playerModel;
     private readonly IServerModel serverModel;
 
+    private readonly ITcpClientService tcpClientService;
 
 
-    public WeaponPresenter(IWeaponView view, IPlayerModel playerModel, IServerModel serverModel)
+
+    public WeaponPresenter(IWeaponView view, IPlayerModel playerModel, IServerModel serverModel, ITcpClientService tcpClientService)
     {
         this.view = view;
 
         this.playerModel = playerModel;
         this.serverModel = serverModel;
 
+        this.tcpClientService = tcpClientService;
 
         this.playerModel.OnCoinsChanged += UpdateCoins;
         this.playerModel.OnWeaponTypeChanged += UpdateWeaponIcon;
@@ -67,7 +70,7 @@ public class WeaponPresenter
 
     public void Quit()
     {
-        GameManager.GetInstance().ResetGame();
+        tcpClientService.Send(ITcpClientService.Connections.Server, new QuitGame(playerModel.Id.ToString(), PacketAction.Generic));
     }
 
     public void Dispose()

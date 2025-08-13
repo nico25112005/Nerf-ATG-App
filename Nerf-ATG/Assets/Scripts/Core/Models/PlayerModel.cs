@@ -178,7 +178,6 @@ public class PlayerModel : IPlayerModel, IResetable
         Coins = Settings.Coins;
         WeaponType = WeaponType.None;
         Team = Team.Red;
-        Name = "";
         Location = null;
         Healing = 0;
         _health = 0;

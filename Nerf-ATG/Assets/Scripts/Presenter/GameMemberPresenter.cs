@@ -56,7 +56,6 @@ public class GameMemberPresenter
     
     private void EvalueateGameHost()
     {
-        UnityEngine.Debug.LogWarning($"PlayerId: {playerModel.Id.ToString()}, GameId: {gameModel.gameInfo.GameId}");
         if(playerModel.Id.ToString() == gameModel.gameInfo.GameId)
         {
             view.ActivateHostPanel();
@@ -81,7 +80,7 @@ public class GameMemberPresenter
 
     public void Quit()
     {
-        GameManager.GetInstance().ResetGame();
+        tcpClientService.Send(ITcpClientService.Connections.Server, new QuitGame(playerModel.Id.ToString(), PacketAction.Generic));
     }
 
     public void Dispose()

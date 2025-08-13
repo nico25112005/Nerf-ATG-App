@@ -1,7 +1,9 @@
 ﻿
 using Game.Enums;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Unity.Collections;
 
 public class SelectGamePresenter
 {
@@ -23,6 +25,14 @@ public class SelectGamePresenter
 
         this.tcpClientService = tcpClientService;
 
+        foreach (var gameInfo in serverModel.ActiveGames.Values)
+        {
+            UnityEngine.Debug.LogWarning("Visualise without event:");
+            view.UpdateGameList(new GameInfo(gameInfo.ToBytes(new byte[ITcpClientService.PACKET_SIZE])) //copy gameInfo Instance with packetaction Add
+            {
+                Action = PacketAction.Add
+            });
+        }
 
         serverModel.onActiveGamesChanged += UpdateGameList;
 
@@ -79,7 +89,7 @@ public class SelectGamePresenter
 
     public void Quit()
     {
-        GameManager.GetInstance().ResetGame();
+        tcpClientService.Send(ITcpClientService.Connections.Server, new QuitGame(playerModel.Id.ToString(), PacketAction.Generic));
     }
 
     public void Dispose()

@@ -20,11 +20,13 @@ public abstract class Packet<T> where T : Enum
         this.Action = action;
     }
 
-    public void ToBytes(byte[] bytes)
+    public byte[] ToBytes(byte[] bytes)
     {
         bytes[0] = Convert.ToByte(Type);
         bytes[1] = (byte)Action;
         WritePayload(bytes, 4); // Payload begins after 4 bytes
+
+        return bytes;
     }
 
     public void FromBytes(byte[] bytes)

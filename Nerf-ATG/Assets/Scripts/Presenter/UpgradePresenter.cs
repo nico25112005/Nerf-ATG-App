@@ -96,7 +96,7 @@ public class UpgradePresenter
 
     public void Quit()
     {
-        GameManager.GetInstance().ResetGame();
+        tcpClientService.Send(ITcpClientService.Connections.Server, new QuitGame(playerModel.Id.ToString(), PacketAction.Generic));
     }
 
     public void Dispose()

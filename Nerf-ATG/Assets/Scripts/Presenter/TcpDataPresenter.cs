@@ -1,9 +1,8 @@
 ﻿using Game.Enums;
-using UnityEngine;
-using System.Timers;
-using System.Linq;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System;
+using System.Timers;
+using UnityEngine.SceneManagement;
 
 namespace Assets.Scripts.Presenter
 {
@@ -34,7 +33,9 @@ namespace Assets.Scripts.Presenter
         {
             if ((ITcpClientService.Connections)sender == ITcpClientService.Connections.Server)
             {
-                UnityEngine.Debug.Log("Recived new Packet: " + (PacketType)bytes[0]);
+                if((PacketType)bytes[0] != PacketType.Ping) 
+                    UnityEngine.Debug.Log("Recived new Packet: " + (PacketType)bytes[0]);
+
                 //Debug.Log(string.Join("|", bytes.Select(b => b.ToString("D3"))));
                 switch ((PacketType)bytes[0])
                 {
@@ -47,7 +48,7 @@ namespace Assets.Scripts.Presenter
                     case PacketType.MapPoint: mainThreadExecutor.Execute(() => HandleMapPoint(new MapPoint(bytes))); break;
                     case PacketType.SwitchTeam: mainThreadExecutor.Execute(() => HandleSwitchTeam(new SwitchTeam(bytes))); break;
                     case PacketType.ServerMessage: mainThreadExecutor.Execute(() => HandleServerMessage(new ServerMessage(bytes))); break;
-                    case PacketType.QuitGame: mainThreadExecutor.Execute(() => GameManager.GetInstance().ResetGame()); break;
+                    case PacketType.QuitGame: mainThreadExecutor.Execute(() => HandleQuitGame()); break;
                     case PacketType.Ping: PingRecived(); break;
                 }
             }
@@ -55,7 +56,7 @@ namespace Assets.Scripts.Presenter
 
         private void ConnectionChanged(object sender, bool connected)
         {
-            if((ITcpClientService.Connections)sender == ITcpClientService.Connections.Server)
+            if ((ITcpClientService.Connections)sender == ITcpClientService.Connections.Server)
             {
                 if (connected == true)
                 {
@@ -67,7 +68,7 @@ namespace Assets.Scripts.Presenter
                         stopwatch.Restart();
                     };
 
-                    timer.Start();   
+                    timer.Start();
                 }
                 else
                 {
@@ -77,7 +78,7 @@ namespace Assets.Scripts.Presenter
                     stopwatch.Stop();
                 }
             }
-            
+
         }
 
         private void PingRecived()
@@ -94,6 +95,7 @@ namespace Assets.Scripts.Presenter
 
         private void HandleGameInfo(GameInfo gameInfo)
         {
+            UnityEngine.Debug.Log("GameInfo: " + gameInfo);
             switch (gameInfo.Action)
             {
                 case PacketAction.Add or PacketAction.Update: serverModel.AddOrUpdateActiveGame(gameInfo); break;
@@ -184,7 +186,19 @@ namespace Assets.Scripts.Presenter
             ToastNotification.Show(serverMessage.Message, "alert");
         }
 
-
+        private void HandleQuitGame()
+        {
+            List<object> obj = new() { playerModel, gameModel, serverModel, mainThreadExecutor, tcpClientService };
+            foreach (object o in obj)
+            {
+                if (o is IResetable resetable)
+                {
+                    resetable.Reset();
+                }
+            }
+            
+            SceneManager.LoadScene("SelectGame");
+        }
 
         // ---------- Server Handlers End ----------
 

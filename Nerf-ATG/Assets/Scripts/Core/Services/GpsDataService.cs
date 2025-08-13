@@ -64,7 +64,7 @@ public class GpsDataService : MonoBehaviour, IGpsDataService
             }
             else
             {
-                GameManager.GetInstance().ResetGame();
+                Application.Quit();
                 yield break;
             }
                 
